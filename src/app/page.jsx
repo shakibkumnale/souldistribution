@@ -156,51 +156,64 @@ const faqItems = [
 
 // This is a Server Component to fetch data
 async function getData() {
+  const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms));
+
   try {
     await connectToDatabase();
-    
-    // Get total number of releases
-    const totalReleases = await Release.countDocuments();
-    
-    // Get total number of artists
-    const totalArtists = await Artist.countDocuments();
-    
-    // Get all featured artists sorted by Spotify followers
-    const popularArtists = await Artist.find({ featured: true })
-      .sort({ 'spotifyData.followers': -1 })
-      .lean();
-    
-    // Get all latest releases without limit
-    const latestReleases = await Release.find({ featured: true })
-      .sort({ releaseDate: -1 })
-      .populate('artists', 'name spotifyArtistId')
-      .lean();
-    
-    // Get all top releases by popularity without limit
-    const topReleases = await Release.find({ featured: true })
-      .sort({ popularity: -1 })
-      .populate('artists', 'name spotifyArtistId')
-      .lean();
-    
+
+    const totalReleases = await Promise.race([
+      Release.countDocuments(),
+      timeout(5000)
+    ]);
+
+    const totalArtists = await Promise.race([
+      Artist.countDocuments(),
+      timeout(5000)
+    ]);
+
+    const popularArtists = await Promise.race([
+      Artist.find({ featured: true })
+        .sort({ 'spotifyData.followers': -1 })
+        .lean(),
+      timeout(5000)
+    ]);
+
+    const latestReleases = await Promise.race([
+      Release.find({ featured: true })
+        .sort({ releaseDate: -1 })
+        .populate('artists', 'name spotifyArtistId')
+        .lean(),
+      timeout(5000)
+    ]);
+
+    const topReleases = await Promise.race([
+      Release.find({ featured: true })
+        .sort({ popularity: -1 })
+        .populate('artists', 'name spotifyArtistId')
+        .lean(),
+      timeout(5000)
+    ]);
+
     return {
       popularArtists: serializeMongoDB(popularArtists),
       latestReleases: serializeMongoDB(latestReleases),
       topReleases: serializeMongoDB(topReleases),
       metrics: {
         totalReleases,
-        totalArtists
-      }
+        totalArtists,
+      },
     };
   } catch (error) {
     console.error('Error fetching data:', error);
+    // Return fallback data
     return {
       popularArtists: [],
       latestReleases: [],
       topReleases: [],
       metrics: {
         totalReleases: 0,
-        totalArtists: 0
-      }
+        totalArtists: 0,
+      },
     };
   }
 }

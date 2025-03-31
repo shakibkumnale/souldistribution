@@ -41,31 +41,51 @@ export async function generateStaticParams() {
 }
 
 async function getArtistData(slug) {
-  await connectToDatabase();
-  const artist = await Artist.findOne({ slug }).lean();
+  const MAX_RETRIES = 3;
+  const QUERY_OPTIONS = { maxTimeMS: 30000 };
   
-  if (!artist) {
-    return null;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      await connectToDatabase();
+      
+      const artist = await Artist.findOne({ slug })
+        .lean()
+        .select('name bio image slug')
+        .setOptions(QUERY_OPTIONS);
+
+      if (!artist) {
+        return null;
+      }
+
+      const releases = await Release.find({ artists: artist._id })
+        .lean()
+        .select('title releaseDate artwork')
+        .sort({ releaseDate: -1 })
+        .populate('artists', 'name')
+        .setOptions(QUERY_OPTIONS);
+
+      console.log(`[Attempt ${attempt}] Found artist and ${releases?.length || 0} releases`);
+
+      return {
+        artist: serializeMongoDB(artist),
+        releases: serializeMongoDB(releases || [])
+      };
+    } catch (error) {
+      console.error(`[Attempt ${attempt}] Error:`, {
+        message: error.message,
+        slug,
+        attempt
+      });
+      
+      if (attempt === MAX_RETRIES) {
+        return null;
+      }
+      
+      const backoff = Math.min(1000 * Math.pow(2, attempt), 10000);
+      await new Promise(resolve => setTimeout(resolve, backoff));
+    }
   }
-  
-  const releases = await Release.find({ artists: artist._id })
-    .populate('artists')
-    .sort({ releaseDate: -1 })
-    .lean();
-  
-  console.log(`Found ${releases.length} releases for artist ${artist.name} (ID: ${artist._id})`);
-  
-  const releasesWithArtistInfo = releases.map(release => {
-    return {
-      ...release,
-      artistName: artist.name
-    };
-  });
-  
-  return {
-    artist: serializeMongoDB(artist),
-    releases: serializeMongoDB(releasesWithArtistInfo)
-  };
+  return null;
 }
 
 export default async function ArtistPage({ params }) {

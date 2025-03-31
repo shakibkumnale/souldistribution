@@ -142,6 +142,10 @@ const ArtistSchema = new mongoose.Schema({
   }
 });
 
+// Remove duplicate index definitions since they already exist in the database
+// ArtistSchema.index({ slug: 1 });
+// ArtistSchema.index({ isPopular: 1 });
+
 // Update the updatedAt timestamp before saving
 ArtistSchema.pre('save', function(next) {
   this.updatedAt = new Date();

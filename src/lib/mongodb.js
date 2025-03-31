@@ -1,31 +1,43 @@
-import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
+if (!process.env.MONGODB_URI) {
   throw new Error('Please define the MONGODB_URI environment variable');
 }
 
-let cached = global.mongodb;
-
-if (!cached) {
-  cached = global.mongodb = { conn: null, promise: null };
-}
+const options = {
+  serverSelectionTimeoutMS: 20000,
+  socketTimeoutMS: 45000,
+  maxPoolSize: 50,
+  connectTimeoutMS: 10000,
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+};
 
 export async function connectToDatabase() {
-  if (cached.conn) {
-    return cached.conn;
+  if (mongoose.connection.readyState >= 1) {
+    return;
   }
 
-  if (!cached.promise) {
-    cached.promise = MongoClient.connect(MONGODB_URI).then((client) => {
-      return {
-        client,
-        db: client.db(),
-      };
-    });
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, options);
+    console.log('Connected to MongoDB');
+    
+    // Only verify indexes exist without trying to recreate them
+    if (mongoose.models.Artist) {
+      const indexes = await mongoose.models.Artist.listIndexes();
+      console.log('Artist indexes:', indexes.map(idx => idx.name));
+    }
+    if (mongoose.models.Release) {
+      const indexes = await mongoose.models.Release.listIndexes();
+      console.log('Release indexes:', indexes.map(idx => idx.name));
+    }
+  } catch (error) {
+    if (error.message.includes('index')) {
+      console.warn('Index verification warning:', error.message);
+      // Continue execution despite index warnings
+      return;
+    }
+    console.error('MongoDB connection error:', error);
+    throw new Error(`Database connection failed: ${error.message}`);
   }
-  
-  cached.conn = await cached.promise;
-  return cached.conn;
-} 
+}
