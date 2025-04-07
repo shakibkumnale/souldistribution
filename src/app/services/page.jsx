@@ -2,16 +2,11 @@
 import PlansSection from '@/components/services/PlansSection';
 import PlansComparison from '@/components/services/PlansComparison';
 import FeatureList from '@/components/services/FeatureList';
-import { createMetadata } from '@/lib/metadata';
-import Script from 'next/script';
-import { generateServiceSchema, generateBreadcrumbSchema } from '@/lib/seoUtils';
 
-export const metadata = createMetadata({
-  title: 'Music Distribution Services',
-  description: 'Distribute your music to Spotify, Apple Music, YouTube Music and 150+ platforms worldwide. Choose from our affordable distribution plans for independent artists.',
-  keywords: ['music distribution service', 'spotify distribution', 'apple music distribution', 'youtube music distribution', 'independent artist services'],
-  canonical: 'https://souldistribution.com/services'
-});
+export const metadata = {
+  title: 'Distribution Services | SoulDistribution',
+  description: 'Music distribution services for indie artists - get your music on Spotify, Apple Music, YouTube Music and more.',
+};
 
 const plans = [
   {
@@ -57,7 +52,7 @@ const plans = [
     name: 'Premium Plan',
     price: '1199',
     period: 'Year',
-    description: 'For professional artists aiming for maximum returns',
+    description: 'Complete solution for professional artists',
     features: [
       'Unlimited Releases (1 Year)',
       '100% Royalties',
@@ -70,7 +65,7 @@ const plans = [
     ],
     popular: false,
     extraInfo: 'All this for just ₹1199/year (Less than ₹100/month!)'
-  }
+  },
 ];
 
 const youtubeOAC = {
@@ -119,86 +114,182 @@ const faqItems = [
   }
 ];
 
-export default function ServicesPage() {
-  // Generate schema for service plans
-  const serviceSchemas = plans.map(plan => generateServiceSchema({
-    ...plan,
-    price: `₹${plan.price}`
-  }));
-  
-  // Generate breadcrumb schema
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://souldistribution.com' },
-    { name: 'Services', url: 'https://souldistribution.com/services' }
-  ]);
-  
+const ServicesPage = () => {
   return (
-    <>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl mb-4">
-            <span className="block">Music Distribution Services</span>
-          </h1>
-          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-300 sm:mt-4">
-            Choose the perfect plan for your music career. Distribute your music to 150+ streaming platforms worldwide.
+    <div className="w-full overflow-hidden bg-gradient-to-b from-gray-950 to-black text-gray-200">
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-purple-950 to-indigo-950 py-20">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 drop-shadow-md text-white">
+              Distribute Your Music Worldwide
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 mb-8">
+              Affordable, transparent music distribution for independent artists
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <a 
+                href="#plans" 
+                className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg"
+              >
+                View Plans
+              </a>
+              <a 
+                href="https://wa.me/8291121080" 
+                className="bg-transparent hover:bg-white/10 border-2 border-purple-400 text-purple-400 hover:text-white hover:border-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300"
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                Contact Us
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Key Benefits */}
+      <div className="py-16 container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-white">Why Choose SoulDistribution?</h2>
+          <div className="w-20 h-1 bg-purple-600 mx-auto mt-4 mb-6 rounded-full"></div>
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            We help independent artists share their music with the world, without the hassle and high costs.
           </p>
         </div>
         
-        <PlansSection plans={plans} youtubeOAC={youtubeOAC} />
-        
-        <div className="mt-24">
-          <h2 className="text-3xl font-bold text-center mb-12">Plan Comparison</h2>
-          <PlansComparison plans={[...plans, youtubeOAC]} />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-purple-900/20 transition duration-300 border border-gray-800">
+            <div className="w-14 h-14 bg-purple-950 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-3 text-white">Global Reach</h3>
+            <p className="text-gray-400">
+              Distribute your music to over 150 streaming platforms worldwide, including all major Indian services.
+            </p>
+          </div>
+          
+          <div className="bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-purple-900/20 transition duration-300 border border-gray-800">
+            <div className="w-14 h-14 bg-purple-950 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-3 text-white">Flexible Royalties</h3>
+            <p className="text-gray-400">
+              Choose from plans offering 0%, 50%, or 100% royalties, with no hidden fees or unexpected costs.
+            </p>
+          </div>
+          
+          <div className="bg-gray-900 p-8 rounded-xl shadow-md hover:shadow-purple-900/20 transition duration-300 border border-gray-800">
+            <div className="w-14 h-14 bg-purple-950 rounded-full flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold mb-3 text-white">Complete Support</h3>
+            <p className="text-gray-400">
+              Get 24/7 support, fast approvals, and helpful resources to grow your music career.
+            </p>
+          </div>
         </div>
-        
-        <div className="mt-24">
-          <h2 className="text-3xl font-bold text-center mb-12">Distribution Features</h2>
-          <FeatureList features={additionalFeatures} />
+      </div>
+
+      {/* Distribution Plans */}
+      <div id="plans" className="py-16 bg-gray-950">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white">Choose Your Plan</h2>
+            <div className="w-20 h-1 bg-purple-600 mx-auto mt-4 mb-6 rounded-full"></div>
+            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+              Select the distribution plan that fits your needs and budget.
+        </p>
+      </div>
+
+      <PlansSection plans={plans} youtubeOAC={youtubeOAC} />
         </div>
-        
-        <div className="mt-24">
-          <h2 className="text-3xl font-bold text-center mb-8" id="faq">Frequently Asked Questions</h2>
-          <div className="max-w-3xl mx-auto">
+      </div>
+
+      {/* Compare Plans */}
+      <div className="py-16 bg-black">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white">Compare Plans</h2>
+            <div className="w-20 h-1 bg-purple-600 mx-auto mt-4 mb-6 rounded-full"></div>
+            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+              Find the perfect plan for your music career stage.
+            </p>
+          </div>
+          
+        <PlansComparison plans={[...plans, youtubeOAC]} />
+        </div>
+      </div>
+
+      {/* Additional Features */}
+      <div className="py-16 bg-gray-950">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white">Additional Features</h2>
+            <div className="w-20 h-1 bg-purple-600 mx-auto mt-4 mb-6 rounded-full"></div>
+            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+              All plans include these essential features to help your music succeed.
+            </p>
+          </div>
+          
+        <FeatureList features={additionalFeatures} />
+        </div>
+      </div>
+
+      {/* FAQ Section */}
+      <div className="py-16 bg-black">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-white">Frequently Asked Questions</h2>
+            <div className="w-20 h-1 bg-purple-600 mx-auto mt-4 mb-6 rounded-full"></div>
+            <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+              Find answers to common questions about our distribution services.
+            </p>
+          </div>
+          
+          <div className="max-w-3xl mx-auto space-y-6">
             {faqItems.map((item, index) => (
-              <div key={index} className="mb-6">
-                <h3 className="text-xl font-semibold mb-2">{item.question}</h3>
-                <p className="text-gray-300">{item.answer}</p>
+              <div key={index} className="bg-gray-900 rounded-xl p-6 hover:shadow-purple-900/20 hover:shadow-md transition duration-300 border border-gray-800">
+                <h3 className="text-xl font-semibold mb-3 text-white">{item.question}</h3>
+                <p className="text-gray-400">{item.answer}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
-      
-      {/* Structured data */}
-      <div className="hidden">
-        {/* Service schema for each plan */}
-        {serviceSchemas.map((schema, index) => (
-          <Script key={`service-schema-${index}`} id={`service-schema-${index}`} type="application/ld+json">
-            {JSON.stringify(schema)}
-          </Script>
-        ))}
-        
-        {/* FAQ schema */}
-        <Script id="faq-schema" type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: faqItems.map(item => ({
-              '@type': 'Question',
-              name: item.question,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: item.answer
-              }
-            }))
-          })}
-        </Script>
-        
-        {/* Breadcrumb schema */}
-        <Script id="breadcrumb-schema" type="application/ld+json">
-          {JSON.stringify(breadcrumbSchema)}
-        </Script>
+
+      {/* CTA Section */}
+      <div className="py-16 bg-gradient-to-r from-purple-950 to-indigo-950 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready To Start Your Music Journey?</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto text-gray-300">
+            Join thousands of artists who trust SoulDistribution with their music career.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+        <a 
+          href="https://wa.me/8291121080" 
+              className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300 shadow-lg"
+          target="_blank" 
+          rel="noopener noreferrer"
+        >
+          Get Started Now
+        </a>
+            <a 
+              href="#plans" 
+              className="bg-transparent hover:bg-white/10 border-2 border-purple-400 text-purple-400 hover:text-white hover:border-white font-semibold py-3 px-8 rounded-full text-lg transition duration-300"
+            >
+              View Plans Again
+            </a>
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
-}
+};
+
+export default ServicesPage;

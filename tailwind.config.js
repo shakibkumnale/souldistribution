@@ -34,9 +34,6 @@ module.exports = {
         'glow-primary': '0 0 15px rgba(255, 58, 140, 0.3)',
         'glow-accent': '0 0 15px rgba(76, 104, 215, 0.3)',
       },
-      animation: {
-        'spin-slow': 'spin 4s linear infinite',
-      },
     },
   },
   plugins: [require('tailwindcss-animate')],

@@ -20,9 +20,6 @@ import { CheckCircle, Music, Globe, ArrowRight, PlayCircle, ShoppingCart, PieCha
 import Link from 'next/link';
 import Image from 'next/image';
 import MusicDiscoverySection from '@/components/home/MusicDiscoverySection';
-import { defaultMetadata } from '@/lib/metadata';
-import Script from 'next/script';
-import { generateServiceSchema } from '@/lib/seoUtils';
 
 // Sample featured playlists - this would come from the admin panel in production
 // const featuredPlaylists = [
@@ -134,107 +131,59 @@ const servicePlans = [
   }
 ];
 
-// Add this after the servicePlans array and before the getData function
-const faqItems = [
-  {
-    question: "What platforms will my music be available on?",
-    answer: "Your music will be distributed to over 150 platforms including Spotify, Apple Music, YouTube Music, Instagram, TikTok, and all major Indian streaming services."
-  },
-  {
-    question: "How do royalty payments work?",
-    answer: "Royalty percentages vary by plan. Basic Plan members keep 0%, Pro Plan members keep 50%, and Premium Plan members keep 100% of their streaming revenue. Payments are processed monthly."
-  },
-  {
-    question: "How long does it take for my music to go live?",
-    answer: "We typically approve releases within 24 hours, and your music will be live on all platforms within 2-5 business days."
-  },
-  {
-    question: "What is a YouTube Official Artist Channel?",
-    answer: "A YouTube Official Artist Channel (OAC) combines all your music content into one channel with a verified badge, custom branding, and enhanced analytics."
-  }
-];
-
 // This is a Server Component to fetch data
 async function getData() {
-  const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms));
-
   try {
     await connectToDatabase();
-
-    const totalReleases = await Promise.race([
-      Release.countDocuments(),
-      timeout(5000)
-    ]);
-
-    const totalArtists = await Promise.race([
-      Artist.countDocuments(),
-      timeout(5000)
-    ]);
-
-    const popularArtists = await Promise.race([
-      Artist.find({ featured: true })
-        .sort({ 'spotifyData.followers': -1 })
-        .lean(),
-      timeout(5000)
-    ]);
-
-    const latestReleases = await Promise.race([
-      Release.find({ featured: true })
-        .sort({ releaseDate: -1 })
-        .populate('artists', 'name spotifyArtistId')
-        .lean(),
-      timeout(5000)
-    ]);
-
-    const topReleases = await Promise.race([
-      Release.find({ featured: true })
-        .sort({ popularity: -1 })
-        .populate('artists', 'name spotifyArtistId')
-        .lean(),
-      timeout(5000)
-    ]);
-
+    
+    // Get total number of releases
+    const totalReleases = await Release.countDocuments();
+    
+    // Get total number of artists
+    const totalArtists = await Artist.countDocuments();
+    
+    // Get all featured artists sorted by Spotify followers
+    const popularArtists = await Artist.find({ featured: true })
+      .sort({ 'spotifyData.followers': -1 })
+      .lean();
+    
+    // Get all latest releases without limit
+    const latestReleases = await Release.find({ featured: true })
+      .sort({ releaseDate: -1 })
+      .populate('artists', 'name spotifyArtistId')
+      .lean();
+    
+    // Get all top releases by popularity without limit
+    const topReleases = await Release.find({ featured: true })
+      .sort({ popularity: -1 })
+      .populate('artists', 'name spotifyArtistId')
+      .lean();
+    
     return {
       popularArtists: serializeMongoDB(popularArtists),
       latestReleases: serializeMongoDB(latestReleases),
       topReleases: serializeMongoDB(topReleases),
       metrics: {
         totalReleases,
-        totalArtists,
-      },
+        totalArtists
+      }
     };
   } catch (error) {
     console.error('Error fetching data:', error);
-    // Return fallback data
     return {
       popularArtists: [],
       latestReleases: [],
       topReleases: [],
       metrics: {
         totalReleases: 0,
-        totalArtists: 0,
-      },
+        totalArtists: 0
+      }
     };
   }
 }
 
-// Add this metadata export before all other code
-export const metadata = {
-  ...defaultMetadata,
-  title: 'Soul Distribution - Indian Music Distribution Service & YouTube OAC',
-  description: 'Distribute your music to 150+ platforms including Spotify, Apple Music, YouTube Music and more. Get YouTube Channel verification. Affordable plans for indie artists.',
-  keywords: [...defaultMetadata.keywords, 'indian music distribution', 'affordable music distribution', 'youtube verified channel', 'spotify distribution india'],
-  alternates: {
-    ...defaultMetadata.alternates,
-    canonical: 'https://souldistribution.com/'
-  },
-};
-
 export default async function HomePage() {
   const { popularArtists, latestReleases, topReleases, metrics } = await getData();
-  
-  // Generate schema for service plans
-  const serviceSchemas = servicePlans.map(plan => generateServiceSchema(plan));
   
   return (
     <main className="min-h-screen bg-gradient-dark overflow-x-hidden">
@@ -569,54 +518,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-      
-      {/* Add this at the end of your component */}
-      <div className="hidden">
-        {/* Service schema for each plan */}
-        {serviceSchemas.map((schema, index) => (
-          <Script key={`service-schema-${index}`} id={`service-schema-${index}`} type="application/ld+json">
-            {JSON.stringify(schema)}
-          </Script>
-        ))}
-        
-        {/* FAQ Schema */}
-        <Script id="faq-schema" type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: faqItems.map(item => ({
-              '@type': 'Question',
-              name: item.question,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: item.answer
-              }
-            }))
-          })}
-        </Script>
-        
-        {/* Homepage specific WebPage schema */}
-        <Script id="webpage-schema" type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'WebPage',
-            name: 'Soul Distribution - Indian Music Distribution Service',
-            description: 'Distribute your music to 150+ platforms including Spotify, Apple Music, YouTube Music and more.',
-            url: 'https://souldistribution.com/',
-            datePublished: '2023-01-01',
-            dateModified: new Date().toISOString(),
-            speakable: {
-              '@type': 'SpeakableSpecification',
-              cssSelector: ['h1', '.speakable']
-            },
-            author: {
-              '@type': 'Organization',
-              name: 'Soul Distribution',
-              url: 'https://souldistribution.com'
-            }
-          })}
-        </Script>
-      </div>
     </main>
   );
 }

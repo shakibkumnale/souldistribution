@@ -7,7 +7,6 @@ import { Suspense } from 'react';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { Menu, X } from 'lucide-react';
-import { FullPageLoader, LoadingSpinner } from '@/components/ui/loading';
 
 export default function AdminLayout({ children }) {
   const [username, setUsername] = useState('');
@@ -66,7 +65,13 @@ export default function AdminLayout({ children }) {
   };
 
   if (loading) {
-    return <FullPageLoader text="Loading Admin Panel..." />;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-xl">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -102,7 +107,7 @@ export default function AdminLayout({ children }) {
             sidebarOpen ? 'md:ml-32' : 'ml-0'
           }`}
         >
-          <Suspense fallback={<div className="flex justify-center py-8"><LoadingSpinner /></div>}>
+          <Suspense fallback={<div>Loading...</div>}>
             {children}
           </Suspense>
           <Toaster />

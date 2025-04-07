@@ -1,17 +1,18 @@
 // src/app/artists/[slug]/page.jsx
 import { notFound } from 'next/navigation';
-import { connectToDatabase } from '@/lib/mongodb';
+import connectToDatabase from '@/lib/db';
 import Artist from '@/models/Artist';
 import Release from '@/models/Release';
 import ArtistProfile from '@/components/artists/ArtistProfile';
 import { serializeMongoDB } from '@/lib/utils';
-import { formatPageMetadata } from '@/lib/seoUtils';
-import Script from 'next/script';
-import { generateArtistSchema, generateBreadcrumbSchema } from '@/lib/seoUtils';
+import { FullPageLoader } from '@/components/ui/LoadingSpinner';
+import { FullPageError } from '@/components/ui/ErrorDisplay';
+import { Suspense } from 'react';
 
 export async function generateMetadata({ params }) {
+  const { slug } = await params;
   await connectToDatabase();
-  const artist = await Artist.findOne({ slug: params.slug });
+  const artist = await Artist.findOne({ slug });
   
   if (!artist) {
     return {
@@ -19,102 +20,133 @@ export async function generateMetadata({ params }) {
     };
   }
   
-  const artistImage = artist.image || null;
+  const imageUrl = artist.profileImage || '/default-artist-profile.jpg';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
+  const canonicalUrl = `${baseUrl}/artists/${slug}`;
   
-  return formatPageMetadata({
-    title: artist.name,
-    description: artist.bio || `Official artist page for ${artist.name}. Listen to music and get the latest releases from ${artist.name} on Soul Distribution.`,
-    path: `/artists/${params.slug}`,
-    image: artistImage,
-    type: 'profile'
-  });
-}
-
-// Generate static paths for frequently visited artist pages
-export async function generateStaticParams() {
-  await connectToDatabase();
-  const popularArtists = await Artist.find({ isPopular: true }).limit(10).lean();
+  // Generate structured data for artist
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'MusicGroup',
+    name: artist.name,
+    description: artist.bio,
+    image: imageUrl,
+    url: canonicalUrl,
+    sameAs: [
+      ...(artist.spotifyUrl ? [`https://open.spotify.com/artist/${artist.spotifyUrl}`] : []),
+      ...(artist.youtubeUrl ? [`https://youtube.com/channel/${artist.youtubeUrl}`] : []),
+      ...(artist.instagramUrl ? [`https://instagram.com/${artist.instagramUrl}`] : []),
+    ],
+  };
   
-  return popularArtists.map(artist => ({
-    slug: artist.slug
-  }));
+  return {
+    title: `${artist.name} | Soul Distribution`,
+    description: artist.bio || `Official page for ${artist.name}`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${artist.name} | Soul Distribution`,
+      description: artist.bio || `Discover music by ${artist.name}`,
+      type: 'profile',
+      url: canonicalUrl,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${artist.name} profile image`,
+        },
+      ],
+      profile: {
+        firstName: artist.name.split(' ')[0],
+        lastName: artist.name.split(' ').slice(1).join(' '),
+        username: artist.slug,
+      },
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${artist.name} | Soul Distribution`,
+      description: artist.bio || `Discover music by ${artist.name}`,
+      images: [imageUrl],
+    },
+  };
 }
 
 async function getArtistData(slug) {
-  const MAX_RETRIES = 3;
-  const QUERY_OPTIONS = { maxTimeMS: 30000 };
+  await connectToDatabase();
+  const artist = await Artist.findOne({ slug }).lean();
   
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      await connectToDatabase();
-      
-      const artist = await Artist.findOne({ slug })
-        .lean()
-        .select('name bio image slug')
-        .setOptions(QUERY_OPTIONS);
-
-      if (!artist) {
-        return null;
-      }
-
-      const releases = await Release.find({ artists: artist._id })
-        .lean()
-        .select('title releaseDate artwork')
-        .sort({ releaseDate: -1 })
-        .populate('artists', 'name')
-        .setOptions(QUERY_OPTIONS);
-
-      console.log(`[Attempt ${attempt}] Found artist and ${releases?.length || 0} releases`);
-
-      return {
-        artist: serializeMongoDB(artist),
-        releases: serializeMongoDB(releases || [])
-      };
-    } catch (error) {
-      console.error(`[Attempt ${attempt}] Error:`, {
-        message: error.message,
-        slug,
-        attempt
-      });
-      
-      if (attempt === MAX_RETRIES) {
-        return null;
-      }
-      
-      const backoff = Math.min(1000 * Math.pow(2, attempt), 10000);
-      await new Promise(resolve => setTimeout(resolve, backoff));
-    }
+  if (!artist) {
+    return null;
   }
-  return null;
+  
+  const releases = await Release.find({ artists: artist._id })
+    .populate('artists')
+    .sort({ releaseDate: -1 })
+    .lean();
+  
+  console.log(`Found ${releases.length} releases for artist ${artist.name} (ID: ${artist._id})`);
+  
+  const releasesWithArtistInfo = releases.map(release => {
+    return {
+      ...release,
+      artistName: artist.name
+    };
+  });
+  
+  return {
+    artist: serializeMongoDB(artist),
+    releases: serializeMongoDB(releasesWithArtistInfo)
+  };
 }
 
 export default async function ArtistPage({ params }) {
-  const data = await getArtistData(params.slug);
-  
-  if (!data) {
-    notFound();
-  }
-  
-  const artistSchema = generateArtistSchema(data.artist);
-  const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: 'Home', url: 'https://souldistribution.com' },
-    { name: 'Artists', url: 'https://souldistribution.com/artists' },
-    { name: data.artist.name, url: `https://souldistribution.com/artists/${params.slug}` }
-  ]);
-  
+  const { slug } = await params;
   return (
-    <>
-      <ArtistProfile artist={data.artist} releases={data.releases} />
-      
-      {/* Structured data for artist */}
-      <Script id="artist-schema" type="application/ld+json">
-        {JSON.stringify(artistSchema)}
-      </Script>
-      
-      {/* Breadcrumb structured data */}
-      <Script id="breadcrumb-schema" type="application/ld+json">
-        {JSON.stringify(breadcrumbSchema)}
-      </Script>
-    </>
+    <Suspense fallback={<FullPageLoader text="Loading artist..." variant="headphones" />}>
+      <ArtistPageContent slug={slug} />
+    </Suspense>
   );
+}
+
+async function ArtistPageContent({ slug }) {
+  try {
+    const data = await getArtistData(slug);
+    
+    if (!data) {
+      return <FullPageError errorType="artist_not_found" />;
+    }
+
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
+    const canonicalUrl = `${baseUrl}/artists/${slug}`;
+
+    // Generate JSON-LD data
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'MusicGroup',
+      name: data.artist.name,
+      description: data.artist.bio,
+      image: data.artist.profileImage,
+      url: canonicalUrl,
+      sameAs: [
+        ...(data.artist.spotifyUrl ? [`https://open.spotify.com/artist/${data.artist.spotifyUrl}`] : []),
+        ...(data.artist.youtubeUrl ? [`https://youtube.com/channel/${data.artist.youtubeUrl}`] : []),
+        ...(data.artist.instagramUrl ? [`https://instagram.com/${data.artist.instagramUrl}`] : []),
+      ],
+    };
+    
+    return (
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        <ArtistProfile artist={data.artist} releases={data.releases} />
+      </>
+    );
+  } catch (error) {
+    console.error('Error loading artist:', error);
+    return <FullPageError errorType="server" />;
+  }
 }

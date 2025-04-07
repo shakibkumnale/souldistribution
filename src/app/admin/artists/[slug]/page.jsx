@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Edit, ChevronLeft, ExternalLink, Music, Youtube, 
-  Instagram, CreditCard, CheckCircle, XCircle, AlertCircle, Trash2, PlusCircle 
+  Instagram, CreditCard, CheckCircle, XCircle, AlertCircle, AlertTriangle, Trash2, PlusCircle 
 } from 'lucide-react';
 import { format } from 'date-fns';
+import ArtistForm from '@/components/admin/ArtistForm';
 import ReleasesTable from '@/components/admin/ReleasesTable';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -75,6 +76,37 @@ export default function ArtistDetailPage({ params }) {
   
   const handleEdit = () => {
     router.push(`/admin/artists?edit=${artist._id}`);
+  };
+
+  const handleArtistSubmit = async (formData) => {
+    try {
+      const response = await fetch(`/api/artists/${artist._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update artist');
+      }
+      
+      const updatedArtist = await response.json();
+      setArtist(updatedArtist);
+      
+      toast({
+        title: "Artist Updated",
+        description: "Artist information has been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating artist:', error);
+      toast({
+        title: "Update Failed",
+        description: "There was an error updating the artist. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteArtist = async () => {

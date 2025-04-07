@@ -23,11 +23,6 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
     return '';
   };
   
-  // Generate artist name for alt text
-  const artistName = typeof mainArtist === 'object' && mainArtist.name ? mainArtist.name : 'Artist';
-  const albumTitle = release.title || 'Album';
-  const imageAlt = `${albumTitle} by ${artistName}`;
-  
   return (
     <main className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
       <div className="flex flex-col gap-8 md:flex-row">
@@ -37,27 +32,23 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
             <div className="relative aspect-square overflow-hidden rounded-xl shadow-lg">
               <Image
                 src={release.coverImage || '/images/placeholder-cover.jpg'}
-                alt={imageAlt}
+                alt={release.title}
                 fill
                 className="object-cover"
                 priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                loading="eager"
-                fetchPriority="high"
-                itemProp="image"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" 
               />
               
             </div>
             
             <div className="mt-6 space-y-4">
               <div>
-                <h1 className="text-2xl font-bold" itemProp="name">{release.title}</h1>
+                <h1 className="text-2xl font-bold">{release.title}</h1>
                 {mainArtist && (
                   <div>
                     <Link 
                       href={typeof mainArtist === 'object' && mainArtist.slug ? `/artists/${mainArtist.slug}` : '#'} 
                       className="text-gray-400 hover:text-purple-400 transition-colors"
-                      itemProp="byArtist"
                     >
                       {typeof mainArtist === 'object' && mainArtist.name ? mainArtist.name : 'Artist'}
                     </Link>
@@ -76,7 +67,7 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                 )}
                 <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                   <Calendar className="w-3 h-3" />
-                  <span itemProp="datePublished">{formatDate(release.releaseDate)}</span>
+                  {formatDate(release.releaseDate)}
                 </div>
               </div>
               
@@ -96,7 +87,6 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                     href={`https://open.spotify.com/track/${release.spotifyUrl}`} 
                     target="_blank" 
                     className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-green-400 bg-green-950 rounded-full hover:bg-green-900 transition-colors"
-                    rel="noopener noreferrer"
                   >
                     <Music className="w-4 h-4" />
                     Spotify
@@ -108,7 +98,6 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                     href={release.appleMusicUrl} 
                     target="_blank" 
                     className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors"
-                    rel="noopener noreferrer"
                   >
                     <Music className="w-4 h-4" />
                     Apple Music
@@ -158,10 +147,6 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                     ? (typeof rel.artists[0] === 'object' ? rel.artists[0] : { name: 'Artist' })
                     : null;
                   
-                  const relTitle = rel.title || 'Release';
-                  const relArtistName = typeof relArtist === 'object' && relArtist.name ? relArtist.name : 'Artist';
-                  const relImageAlt = `${relTitle} by ${relArtistName}`;
-                  
                   return (
                     <Link 
                       key={rel._id ? (typeof rel._id === 'string' ? rel._id : JSON.stringify(rel._id)) : `release-${rel.title}-${index}`}
@@ -171,10 +156,9 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                       <div className="relative overflow-hidden rounded-lg bg-black aspect-square">
                         <Image
                           src={rel.coverImage || '/images/placeholder-cover.jpg'}
-                          alt={relImageAlt}
+                          alt={rel.title}
                           fill
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
                         />
                       </div>
                       <h3 className="mt-2 font-medium text-white group-hover:text-purple-400 truncate transition-colors">

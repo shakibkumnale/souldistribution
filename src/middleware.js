@@ -45,28 +45,13 @@ export async function middleware(request) {
     }
   }
   
-  // Add security and SEO-related headers to all responses
-  const response = NextResponse.next();
-  
-  // Security headers
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  
-  // SEO related - tell search engines to respect canonical links
-  response.headers.set('Link', '<https://souldistribution.com>; rel="canonical"');
-  
-  // Prevent automated content scraping
-  response.headers.set('X-Robots-Tag', 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1');
-  
-  return response;
+  // For non-admin routes, just proceed
+  return NextResponse.next();
 }
 
 export const config = {
   // Specify which paths this middleware should run on
   matcher: [
     '/admin/:path*',
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],
 };

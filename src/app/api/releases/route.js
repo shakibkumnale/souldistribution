@@ -240,19 +240,9 @@ export async function POST(request) {
     await release.save();
     
     return NextResponse.json(serializeMongoDB(release.toObject()));
-  } catch (error) {
-    console.error('Error creating release:', error);
-    
-    // Handle duplicate slug error
-    if (error.code === 11000 && error.keyPattern?.slug) {
-      return NextResponse.json(
-        { error: 'A release with this slug already exists' },
-        { status: 400 }
-      );
-    }
-    
+  } catch {
     return NextResponse.json(
-      { error: 'Failed to create release', message: error.message },
+      { error: 'Failed to create release' },
       { status: 500 }
     );
   }

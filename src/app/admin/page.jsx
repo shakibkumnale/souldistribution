@@ -6,7 +6,6 @@ import { Users, Music2, PlayCircle, TrendingUp, User, UserPlus } from 'lucide-re
 import Image from 'next/image';
 import Link from 'next/link';
 import DashboardStats from '@/components/admin/DashboardStats';
-import { LoadingSpinner } from '@/components/ui/loading';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -49,7 +48,7 @@ export default function AdminDashboard() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <LoadingSpinner />
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
       </div>
     );
   }

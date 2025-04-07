@@ -24,8 +24,7 @@ export async function GET() {
         username: payload.username
       });
     } catch {
-      // Token verification failed
-      return NextResponse.json({ isAuthenticated: false });
+      return NextResponse.json({ isAuthenticated: false }, { status: 401 });
     }
   } catch (error) {
     console.error('User status check error:', error);
