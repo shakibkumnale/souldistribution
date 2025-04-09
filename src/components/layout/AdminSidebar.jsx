@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Music, Users, BarChart, Settings, LogOut, LineChart, X } from 'lucide-react';
-import { useRefresh } from '@/app/admin/layout';
+import { useRefresh } from '@/lib/refresh-context';
 
 export default function AdminSidebar({ isOpen, toggleSidebar }) {
   const pathname = usePathname();

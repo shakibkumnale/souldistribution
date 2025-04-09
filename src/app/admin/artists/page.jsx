@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { generateSlug } from '@/lib/utils';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useRefresh } from '@/app/admin/layout';
+import { useRefresh } from '@/lib/refresh-context';
 
 export default function AdminArtists() {
   const [artists, setArtists] = useState([]);

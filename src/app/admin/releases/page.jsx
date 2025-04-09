@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ReleaseForm from '@/components/admin/ReleaseForm';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useRefresh } from '@/app/admin/layout';
+import { useRefresh } from '@/lib/refresh-context';
 
 // Helper function to ensure all ObjectId instances are properly serialized
 function ensureString(value) {
