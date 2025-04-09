@@ -22,12 +22,51 @@ async function getReleases() {
                          release.artists[0].name ? 
                          release.artists[0].name : 'Unknown Artist';
       
+      // Helper function to convert MongoDB objects to plain objects
+      const serializeObjectId = (obj) => {
+        if (!obj) return obj;
+        
+        if (obj._id && typeof obj._id.toString === 'function') {
+          return { ...obj, _id: obj._id.toString() };
+        }
+        
+        return obj;
+      };
+      
+      // Serialize artists array
+      const serializedArtists = Array.isArray(release.artists) 
+        ? release.artists.map(artist => {
+            if (!artist) return '';
+            if (typeof artist === 'string') return artist;
+            if (artist._id) {
+              return {
+                ...artist,
+                _id: artist._id.toString()
+              };
+            }
+            return artist;
+          })
+        : [];
+      
+      // Serialize featuring artists if they exist
+      const serializedFeaturingArtists = Array.isArray(release.featuringArtists)
+        ? release.featuringArtists.map(artist => {
+            if (!artist) return null;
+            if (artist._id) {
+              return {
+                ...artist,
+                _id: artist._id.toString()
+              };
+            }
+            return artist;
+          })
+        : [];
+      
       return {
         ...release,
         _id: release._id.toString(),
-        artists: Array.isArray(release.artists) ? 
-          release.artists.map(artist => artist && artist._id ? artist._id.toString() : '') 
-          : [],
+        artists: serializedArtists,
+        featuringArtists: serializedFeaturingArtists, 
         artistName,
         createdAt: release.createdAt ? release.createdAt.toISOString() : new Date().toISOString(),
         releaseDate: release.releaseDate ? release.releaseDate.toISOString() : new Date().toISOString(),
@@ -44,10 +83,10 @@ export default async function ReleasesPage() {
   
   return (
     <main className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold mb-12">Our Releases</h1>
+      <h1 className="text-4xl font-bold mb-8">Our Releases</h1>
       
       <Suspense fallback={<div>Loading releases...</div>}>
-        <ReleasesGrid releases={releases} columns={5} />
+        <ReleasesGrid releases={releases} columns={5} enableFiltering={true} enableSorting={true} />
       </Suspense>
     </main>
   );

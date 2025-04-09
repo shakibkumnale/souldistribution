@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ReleaseForm from '@/components/admin/ReleaseForm';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useRefresh } from '@/app/admin/layout';
 
 // Helper function to ensure all ObjectId instances are properly serialized
 function ensureString(value) {
@@ -65,10 +66,16 @@ export default function AdminReleases() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Fetch artists on mount
+  // Use the custom hook
+  const { refreshKey } = useRefresh();
+  
+  // Fetch artists on mount or when refreshKey changes
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Set loading state to show spinner
+        setLoading(true);
+        
         // Fetch artists
         const artistsResponse = await fetch('/api/artists');
         if (!artistsResponse.ok) {
@@ -77,8 +84,8 @@ export default function AdminReleases() {
         const artistsData = await artistsResponse.json();
         setArtists(artistsData.artists || []);
         
-        // Fetch releases
-        const releasesResponse = await fetch('/api/releases');
+        // Fetch releases - use fetchAll=true to get all releases without pagination
+        const releasesResponse = await fetch('/api/releases?fetchAll=true');
         if (!releasesResponse.ok) {
           throw new Error('Failed to fetch releases');
         }
@@ -115,11 +122,13 @@ export default function AdminReleases() {
       } catch (error) {
         console.error('Error fetching data:', error);
         // Don't set error state to avoid confusion with form errors
+      } finally {
+        setLoading(false);
       }
     };
     
     fetchData();
-  }, [success]); // Refresh when a new release is created
+  }, [refreshKey, success]); // Refresh when refreshKey changes or a new release is created
   
   // Handle form submission
   const handleSubmitRelease = async (formData) => {

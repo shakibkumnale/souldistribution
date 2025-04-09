@@ -9,26 +9,31 @@ export async function GET(request) {
     await connectToDatabase();
     
     const { searchParams } = new URL(request.url);
+    const fetchAll = searchParams.get('fetchAll') === 'true';
     const limit = parseInt(searchParams.get('limit') || '50');
     const page = parseInt(searchParams.get('page') || '1');
     const skip = (page - 1) * limit;
     
-    // Include plans and payment history in the selection
-    const artists = await Artist.find({})
+    // Create base query
+    let artistsQuery = Artist.find({})
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
       .select('name slug image spotifyData.genres spotifyData.images spotifyData.followers plans paymentHistory');
     
+    // Only apply pagination if not fetching all
+    if (!fetchAll) {
+      artistsQuery = artistsQuery.skip(skip).limit(limit);
+    }
+    
+    const artists = await artistsQuery;
     const total = await Artist.countDocuments({});
     
     return NextResponse.json({
       artists,
       pagination: {
         total,
-        pages: Math.ceil(total / limit),
-        page,
-        limit
+        pages: fetchAll ? 1 : Math.ceil(total / limit),
+        page: fetchAll ? 1 : page,
+        limit: fetchAll ? total : limit
       }
     });
   } catch (error) {

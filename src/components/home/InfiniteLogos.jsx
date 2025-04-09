@@ -7,15 +7,15 @@ import { useEffect, useState } from 'react';
 export default function InfiniteLogos({ dsps }) {
   // Triple the array to create a seamless loop
   const allDSPs = [...dsps, ...dsps, ...dsps];
-  const [duration, setDuration] = useState(25);
+  const [duration, setDuration] = useState(8);
 
   // Adjust animation duration based on screen size
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setDuration(15); // Faster on small screens
+        setDuration(10); // Faster on small screens
       } else {
-        setDuration(25);
+        setDuration(15);
       }
     };
 

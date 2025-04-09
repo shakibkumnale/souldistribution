@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { generateSlug } from '@/lib/utils';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useRefresh } from '@/app/admin/layout';
 
 export default function AdminArtists() {
   const [artists, setArtists] = useState([]);
@@ -18,17 +19,20 @@ export default function AdminArtists() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingArtist, setEditingArtist] = useState(null);
   const router = useRouter();
+  
+  // Use the custom hook
+  const { refreshKey } = useRefresh();
 
   useEffect(() => {
     fetchArtists();
-  }, []);
+  }, [refreshKey]); // Reload when refreshKey changes
 
   const fetchArtists = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch('/api/artists', {
+      const response = await fetch('/api/artists?fetchAll=true', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

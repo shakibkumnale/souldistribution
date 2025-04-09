@@ -28,7 +28,6 @@ export async function GET() {
     // Get top 5 artists by follower count (increased from 3 to 5)
     const popularArtists = await Artist.find({})
       .sort({ 'spotifyData.followers': -1 })
-      .limit(5)
       .lean();
       
     const formattedArtists = popularArtists.map(artist => ({

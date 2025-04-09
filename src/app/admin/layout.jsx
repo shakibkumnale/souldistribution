@@ -1,12 +1,56 @@
 'use client';
 
 // src/app/admin/layout.jsx
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, createContext, useCallback, useContext } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { Suspense } from 'react';
 import AdminSidebar from '@/components/layout/AdminSidebar';
 import { Toaster } from '@/components/ui/toaster';
 import { Menu, X } from 'lucide-react';
+
+// Create a context for refreshing data
+export const RefreshContext = createContext(null);
+
+// Create a provider component
+export function RefreshProvider({ children }) {
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastPath, setLastPath] = useState('');
+  const pathname = usePathname();
+
+  // Create refresh function
+  const refresh = useCallback(() => {
+    setRefreshKey(prev => prev + 1);
+  }, []);
+
+  useEffect(() => {
+    // Track route changes to trigger refresh when needed
+    if (lastPath && lastPath !== pathname) {
+      // If we've changed routes, refresh the data
+      refresh();
+    }
+    setLastPath(pathname);
+  }, [pathname, lastPath, refresh]);
+
+  return (
+    <RefreshContext.Provider value={{ refresh, lastPath, refreshKey }}>
+      {children}
+    </RefreshContext.Provider>
+  );
+}
+
+// Create a custom hook for using the refresh context
+export function useRefresh() {
+  const context = useContext(RefreshContext);
+  if (context === null) {
+    // Return a default value if context is not available
+    return { 
+      refresh: () => {}, 
+      lastPath: '', 
+      refreshKey: 0 
+    };
+  }
+  return context;
+}
 
 export default function AdminLayout({ children }) {
   const [username, setUsername] = useState('');
@@ -75,44 +119,46 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
-      <header className="bg-gray-800 text-white p-4 w-full z-50 fixed top-0 left-0 right-0">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <button 
-              onClick={toggleSidebar}
-              className="md:hidden p-2 rounded-md hover:bg-gray-700"
-              aria-label="Toggle sidebar"
-            >
-              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            <h1 className="text-xl font-bold">DiStroSoul Admin</h1>
+    <RefreshProvider>
+      <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 overflow-hidden">
+        <header className="bg-gray-800 text-white p-4 w-full z-50 fixed top-0 left-0 right-0">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={toggleSidebar}
+                className="md:hidden p-2 rounded-md hover:bg-gray-700"
+                aria-label="Toggle sidebar"
+              >
+                {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+              </button>
+              <h1 className="text-xl font-bold">DiStroSoul Admin</h1>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="hidden sm:inline">Welcome, {username}</span>
+              <button 
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
+              >
+                Logout
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="hidden sm:inline">Welcome, {username}</span>
-            <button 
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-700 text-white py-1 px-3 rounded"
-            >
-              Logout
-            </button>
-          </div>
+        </header>
+        
+        <div className="flex flex-1 mt-16">
+          <AdminSidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
+          <main 
+            className={`flex-1 p-4 transition-all duration-300 ${
+              sidebarOpen ? 'md:ml-32' : 'ml-0'
+            }`}
+          >
+            <Suspense fallback={<div>Loading...</div>}>
+              {children}
+            </Suspense>
+            <Toaster />
+          </main>
         </div>
-      </header>
-      
-      <div className="flex flex-1 mt-16">
-        <AdminSidebar isOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
-        <main 
-          className={`flex-1 p-4 transition-all duration-300 ${
-            sidebarOpen ? 'md:ml-32' : 'ml-0'
-          }`}
-        >
-          <Suspense fallback={<div>Loading...</div>}>
-            {children}
-          </Suspense>
-          <Toaster />
-        </main>
       </div>
-    </div>
+    </RefreshProvider>
   );
 }

@@ -1,10 +1,15 @@
 'use client';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Music, Users, BarChart, Settings, LogOut, LineChart, X } from 'lucide-react';
+import { useRefresh } from '@/app/admin/layout';
 
 export default function AdminSidebar({ isOpen, toggleSidebar }) {
   const pathname = usePathname();
+  const router = useRouter();
+  
+  // Use the custom hook
+  const { refresh } = useRefresh();
 
   const navItems = [
     { href: '/admin', label: 'Dashboard', icon: <BarChart className="w-5 h-5" /> },
@@ -13,6 +18,17 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
     { href: '/admin/analytics', label: 'Analytics', icon: <LineChart className="w-5 h-5" /> },
     { href: '/admin/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
+
+  const handleNavigation = (href) => {
+    if (pathname !== href) {
+      // Only navigate if this is a different route
+      router.push(href);
+    }
+    
+    if (window.innerWidth < 768) {
+      toggleSidebar();
+    }
+  };
 
   return (
     <>
@@ -41,15 +57,10 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
-                <Link
+                <button
                   key={item.href}
-                  href={item.href}
-                  onClick={() => {
-                    if (window.innerWidth < 768) {
-                      toggleSidebar();
-                    }
-                  }}
-                  className={`flex items-center px-3 py-3 rounded-md transition-colors ${
+                  onClick={() => handleNavigation(item.href)}
+                  className={`flex items-center px-3 py-3 rounded-md transition-colors w-full text-left ${
                     isActive
                       ? 'bg-blue-600 text-white shadow-md'
                       : 'text-blue-100 hover:bg-blue-700 hover:text-white'
@@ -57,7 +68,7 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
                 >
                   <span className="mr-3">{item.icon}</span>
                   <span className="font-medium">{item.label}</span>
-                </Link>
+                </button>
               );
             })}
           </nav>

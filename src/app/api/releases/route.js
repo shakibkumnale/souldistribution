@@ -59,6 +59,7 @@ export async function GET(request) {
     await connectToDatabase();
     
     const { searchParams } = new URL(request.url);
+    const fetchAll = searchParams.get('fetchAll') === 'true';
     const limit = parseInt(searchParams.get('limit') || '20');
     const page = parseInt(searchParams.get('page') || '1');
     const featured = searchParams.get('featured') === 'true';
@@ -82,13 +83,17 @@ export async function GET(request) {
     
     const skip = (page - 1) * limit;
     
-    // Fetch releases with pagination
-    const releases = await Release.find(query)
+    // Fetch releases, optionally skipping pagination
+    let releasesQuery = Release.find(query)
       .populate('artists')
-      .sort({ releaseDate: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+      .sort({ releaseDate: -1 });
+      
+    // Only apply pagination if we're not fetching all records
+    if (!fetchAll) {
+      releasesQuery = releasesQuery.skip(skip).limit(limit);
+    }
+    
+    const releases = await releasesQuery.lean();
     
     const total = await Release.countDocuments(query);
     
@@ -122,9 +127,9 @@ export async function GET(request) {
       releases: fullySerializedReleases,
       pagination: {
         total,
-        pages: Math.ceil(total / limit),
-        page,
-        limit
+        pages: fetchAll ? 1 : Math.ceil(total / limit),
+        page: fetchAll ? 1 : page,
+        limit: fetchAll ? total : limit
       }
     });
   } catch (error) {
