@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Music, Users, BarChart, Settings, LogOut, LineChart, X } from 'lucide-react';
+import { Music, Users, BarChart, Settings, LogOut, LineChart, X, DollarSign } from 'lucide-react';
 import { useRefresh } from '@/lib/refresh-context';
 
 export default function AdminSidebar({ isOpen, toggleSidebar }) {
@@ -16,6 +16,7 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
     { href: '/admin/artists', label: 'Artists', icon: <Users className="w-5 h-5" /> },
     { href: '/admin/releases', label: 'Releases', icon: <Music className="w-5 h-5" /> },
     { href: '/admin/analytics', label: 'Analytics', icon: <LineChart className="w-5 h-5" /> },
+    { href: '/admin/revenue', label: 'Revenue', icon: <DollarSign className="w-5 h-5" /> },
     { href: '/admin/settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
   ];
 

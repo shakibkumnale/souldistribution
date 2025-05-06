@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Upload, AlertCircle } from 'lucide-react';
+import { Loader2, Upload, AlertCircle, BarChart3 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AnalyticsPage() {
   const [file, setFile] = useState(null);
@@ -95,8 +96,22 @@ export default function AnalyticsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Analytics & Streaming</h1>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="dark:bg-gray-900">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="dark:bg-gray-900 hover:shadow-lg transition-shadow">
+          <Link href="/admin/revenue" className="block h-full">
+            <CardHeader className="p-6">
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="h-5 w-5 text-green-500" /> 
+                <span>Revenue Analytics</span>
+              </CardTitle>
+              <CardDescription>
+                View detailed revenue reports by artist, track, and platform
+              </CardDescription>
+            </CardHeader>
+          </Link>
+        </Card>
+
+        <Card className="dark:bg-gray-900 md:col-span-2">
           <CardHeader>
             <CardTitle>Upload LANDR Stream Report</CardTitle>
             <CardDescription>
