@@ -41,7 +41,8 @@ const nextConfig = {
   },
   
   experimental: {
-    optimizeCss: true, // CSS optimization
+    // Removed optimizeCss as it requires critters to be installed server-side
+    // optimizeCss: true, 
     serverActions: {
       allowedOrigins: ['souldistribution.com'],
     },
