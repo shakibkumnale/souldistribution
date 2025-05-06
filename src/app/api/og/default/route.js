@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET() {
   try {
@@ -74,6 +74,6 @@ export async function GET() {
     );
   } catch (error) {
     console.error('Error generating OG image:', error);
-    return new Response('Error generating image', { status: 500 });
+    return new Response(`Error generating image: ${error.message}`, { status: 500 });
   }
 } 

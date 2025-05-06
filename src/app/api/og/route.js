@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og';
 import connectToDatabase from '@/lib/db';
 import Release from '@/models/Release';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function GET(request) {
   try {
@@ -118,6 +118,6 @@ export async function GET(request) {
     );
   } catch (error) {
     console.error('Error generating OG image:', error);
-    return new Response('Error generating image', { status: 500 });
+    return new Response(`Error generating image: ${error.message}`, { status: 500 });
   }
 } 
