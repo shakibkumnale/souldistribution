@@ -74,10 +74,39 @@ const CustomPieTooltip = ({ active, payload }) => {
   return null;
 };
 
+// Calculate responsive radius based on screen size
+const useResponsiveRadius = () => {
+  const [radius, setRadius] = useState(120);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setRadius(70); // Small screens
+      } else if (window.innerWidth < 1024) {
+        setRadius(90); // Medium screens
+      } else {
+        setRadius(120); // Large screens
+      }
+    };
+
+    // Initial calculation
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return radius;
+};
+
 export default function TrackRevenuePage() {
   const router = useRouter();
   const params = useParams();
   const trackId = params.track;
+  const pieRadius = useResponsiveRadius();
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -396,7 +425,7 @@ export default function TrackRevenuePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-60 sm:h-72 md:h-80">
               {Array.from(trackData.stores || []).length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -411,7 +440,7 @@ export default function TrackRevenuePage() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={120}
+                      outerRadius={pieRadius}
                       label={false}
                       labelLine={false}
                     >
@@ -421,10 +450,10 @@ export default function TrackRevenuePage() {
                     </Pie>
                     <Tooltip content={<CustomPieTooltip />} />
                     <Legend 
-                      layout="vertical"
-                      align="right" 
-                      verticalAlign="middle"
-                      wrapperStyle={{ paddingLeft: 20 }}
+                      layout={window.innerWidth < 768 ? 'horizontal' : 'vertical'}
+                      align={window.innerWidth < 768 ? 'center' : 'right'} 
+                      verticalAlign={window.innerWidth < 768 ? 'bottom' : 'middle'}
+                      wrapperStyle={window.innerWidth < 768 ? { paddingTop: '20px' } : { paddingLeft: 20 }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
@@ -446,7 +475,7 @@ export default function TrackRevenuePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-60 sm:h-72 md:h-80">
               {Array.from(trackData.countries || []).length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -461,7 +490,7 @@ export default function TrackRevenuePage() {
                       nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={120}
+                      outerRadius={pieRadius}
                       label={false}
                       labelLine={false}
                     >
@@ -471,10 +500,10 @@ export default function TrackRevenuePage() {
                     </Pie>
                     <Tooltip content={<CustomPieTooltip />} />
                     <Legend 
-                      layout="vertical"
-                      align="right" 
-                      verticalAlign="middle"
-                      wrapperStyle={{ paddingLeft: 20 }}
+                      layout={window.innerWidth < 768 ? 'horizontal' : 'vertical'}
+                      align={window.innerWidth < 768 ? 'center' : 'right'} 
+                      verticalAlign={window.innerWidth < 768 ? 'bottom' : 'middle'}
+                      wrapperStyle={window.innerWidth < 768 ? { paddingTop: '20px' } : { paddingLeft: 20 }}
                     />
                   </PieChart>
                 </ResponsiveContainer>

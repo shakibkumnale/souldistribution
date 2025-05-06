@@ -14,6 +14,7 @@ import {
 import { 
   DollarSign, Music, TrendingUp, AlertCircle, Loader2, 
   Filter, RefreshCw, Store, Globe, Calendar, X, 
+  BarChart2, ListFilter, PieChart as PieChartIcon, MapPin
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -76,6 +77,34 @@ const CustomPieTooltip = ({ active, payload }) => {
   return null;
 };
 
+// Calculate responsive radius based on screen size
+const useResponsiveRadius = () => {
+  const [radius, setRadius] = useState(110);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setRadius(70); // Small screens
+      } else if (window.innerWidth < 1024) {
+        setRadius(90); // Medium screens
+      } else {
+        setRadius(110); // Large screens
+      }
+    };
+
+    // Initial calculation
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return radius;
+};
+
 export default function RevenueAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -103,6 +132,7 @@ export default function RevenueAnalyticsPage() {
   const [showTrackModal, setShowTrackModal] = useState(false);
 
   const router = useRouter();
+  const radius = useResponsiveRadius();
 
   const fetchRevenueAnalytics = async (filters = {}) => {
     try {
@@ -533,18 +563,22 @@ export default function RevenueAnalyticsPage() {
       ) : (
         <>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="bg-gray-900 border-gray-700">
-              <TabsTrigger value="overview" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-                Overview
+            <TabsList className="bg-gray-900 border-gray-700 flex w-full overflow-x-auto md:overflow-visible">
+              <TabsTrigger value="overview" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white min-w-0">
+                <span className="hidden md:inline">Overview</span>
+                <BarChart2 className="md:hidden h-4 w-4" />
               </TabsTrigger>
-              <TabsTrigger value="details" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-                Revenue Details
+              <TabsTrigger value="details" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white min-w-0 whitespace-nowrap">
+                <span className="hidden md:inline">Revenue Details</span>
+                <span className="md:hidden">Details</span>
               </TabsTrigger>
-              <TabsTrigger value="stores" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-                By Store
+              <TabsTrigger value="stores" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white min-w-0">
+                <span className="hidden md:inline">By Store</span>
+                <Store className="md:hidden h-4 w-4" />
               </TabsTrigger>
-              <TabsTrigger value="countries" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
-                By Country
+              <TabsTrigger value="countries" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white min-w-0">
+                <span className="hidden md:inline">By Country</span>
+                <MapPin className="md:hidden h-4 w-4" />
               </TabsTrigger>
             </TabsList>
             
@@ -595,7 +629,7 @@ export default function RevenueAnalyticsPage() {
               </div>
               
               {/* Store distribution chart */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Card className="bg-gray-900 border-gray-800">
                   <CardHeader>
                     <CardTitle className="text-gray-200">Revenue by Store</CardTitle>
@@ -604,7 +638,7 @@ export default function RevenueAnalyticsPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
+                    <div className="h-60 sm:h-72 md:h-80">
                       {storeChartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -617,7 +651,7 @@ export default function RevenueAnalyticsPage() {
                               nameKey="name"
                               cx="50%"
                               cy="50%"
-                              outerRadius={110}
+                              outerRadius={radius}
                               label={false}
                               labelLine={false}
                               onClick={(data) => handleFilterChange('store', data.name)}
@@ -631,9 +665,10 @@ export default function RevenueAnalyticsPage() {
                             <Legend 
                               onClick={(data) => handleFilterChange('store', data.value)} 
                               cursor="pointer"
-                              layout="vertical"
-                              align="right"
-                              verticalAlign="middle"
+                              layout={window.innerWidth < 768 ? 'horizontal' : 'vertical'}
+                              align={window.innerWidth < 768 ? 'center' : 'right'}
+                              verticalAlign={window.innerWidth < 768 ? 'bottom' : 'middle'}
+                              wrapperStyle={window.innerWidth < 768 ? { paddingTop: '20px' } : {}}
                             />
                           </PieChart>
                         </ResponsiveContainer>
@@ -655,7 +690,7 @@ export default function RevenueAnalyticsPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="h-80">
+                    <div className="h-60 sm:h-72 md:h-80">
                       {countryChartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <PieChart>
@@ -668,7 +703,7 @@ export default function RevenueAnalyticsPage() {
                               nameKey="name"
                               cx="50%"
                               cy="50%"
-                              outerRadius={120}
+                              outerRadius={radius}
                               label={false}
                               labelLine={false}
                               onClick={(data) => handleFilterChange('country', data.name)}
@@ -682,9 +717,10 @@ export default function RevenueAnalyticsPage() {
                             <Legend 
                               onClick={(data) => handleFilterChange('country', data.value)}
                               cursor="pointer"
-                              layout="vertical"
-                              align="right"
-                              verticalAlign="middle"
+                              layout={window.innerWidth < 768 ? 'horizontal' : 'vertical'}
+                              align={window.innerWidth < 768 ? 'center' : 'right'}
+                              verticalAlign={window.innerWidth < 768 ? 'bottom' : 'middle'}
+                              wrapperStyle={window.innerWidth < 768 ? { paddingTop: '20px' } : {}}
                             />
                           </PieChart>
                         </ResponsiveContainer>

@@ -2,6 +2,13 @@ import { Metadata } from 'next';
 import Image from 'next/image';
 import { MusicIcon, Award, Users, Headphones, TrendingUp, Instagram, Music, Mic, Video, BarChart4 } from 'lucide-react';
 
+// Define viewport separately from metadata
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
   title: 'About Us | Soul Distribution',
   description: 'Learn about Soul Distribution, our mission, and how we help artists distribute their music globally.',

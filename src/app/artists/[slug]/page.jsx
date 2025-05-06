@@ -9,6 +9,13 @@ import { FullPageLoader } from '@/components/ui/LoadingSpinner';
 import { FullPageError } from '@/components/ui/ErrorDisplay';
 import { Suspense } from 'react';
 
+// Define viewport separately from metadata
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export async function generateMetadata({ params }) {
   const { slug } = await params;
   await connectToDatabase();
@@ -24,24 +31,12 @@ export async function generateMetadata({ params }) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
   const canonicalUrl = `${baseUrl}/artists/${slug}`;
   
-  // Generate structured data for artist
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'MusicGroup',
-    name: artist.name,
-    description: artist.bio,
-    image: imageUrl,
-    url: canonicalUrl,
-    sameAs: [
-      ...(artist.spotifyUrl ? [`https://open.spotify.com/artist/${artist.spotifyUrl}`] : []),
-      ...(artist.youtubeUrl ? [`https://youtube.com/channel/${artist.youtubeUrl}`] : []),
-      ...(artist.instagramUrl ? [`https://instagram.com/${artist.instagramUrl}`] : []),
-    ],
-  };
+  // Dynamic OG Image URL
+  const ogImageUrl = `${baseUrl}/api/og/artist?slug=${slug}`;
   
   return {
     title: `${artist.name} | Soul Distribution`,
-    description: artist.bio || `Official page for ${artist.name}`,
+    description: artist.bio || `${artist.name} is an independent artist distributing music worldwide through Soul Distribution. Stream their releases on Spotify, Apple Music, and other platforms.`,
     alternates: {
       canonical: canonicalUrl,
     },
@@ -52,7 +47,7 @@ export async function generateMetadata({ params }) {
       url: canonicalUrl,
       images: [
         {
-          url: imageUrl,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: `${artist.name} profile image`,
@@ -68,7 +63,7 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title: `${artist.name} | Soul Distribution`,
       description: artist.bio || `Discover music by ${artist.name}`,
-      images: [imageUrl],
+      images: [ogImageUrl],
     },
   };
 }

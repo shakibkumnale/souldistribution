@@ -2,11 +2,15 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Music, Play, Disc3, Calendar, ExternalLink, Share2 } from 'lucide-react';
+import { useState } from 'react';
+import { Music, Play, Disc3, Calendar, ExternalLink, Share2, Check } from 'lucide-react';
 import MediaPlayer from '@/components/releases/MediaPlayer';
 import { formatDate } from '@/lib/utils';
 
 export default function ReleaseDetails({ release, moreReleases = [] }) {
+  // State for showing copy feedback
+  const [copied, setCopied] = useState(false);
+  
   // Extract Spotify URI from URL if available
 
   
@@ -21,6 +25,29 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
     if (artist.$oid) return artist.$oid;
     if (artist._id) return typeof artist._id === 'string' ? artist._id : JSON.stringify(artist._id);
     return '';
+  };
+
+  // Handle share functionality
+  const handleShare = async () => {
+    const shareData = {
+      title: `${release.title} by ${mainArtist?.name || 'Artist'}`,
+      text: `Check out "${release.title}" by ${mainArtist?.name || 'Artist'} on Soul Distribution`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        // Use Web Share API if supported
+        await navigator.share(shareData);
+      } else {
+        // Fallback to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
+    }
   };
   
   return (
@@ -116,16 +143,24 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                 )}
               </div>
               
-              {/* Share button */}
+              {/* Share button with improved functionality */}
               <button 
-                onClick={() => navigator.clipboard.writeText(window.location.href)}
+                onClick={handleShare}
                 className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-zinc-800 rounded-full hover:bg-zinc-700 transition-colors"
+                aria-label="Share this release"
               >
-                <Share2 className="w-4 h-4" />
-                Copy Share Link
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-400" />
+                    Link Copied!
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4" />
+                    Share
+                  </>
+                )}
               </button>
-              
-            
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import AdminLayout from '@/app/admin/layout';
+import ConsentBanner from '@/components/analytics/ConsentBanner';
 
 export default function ClientLayout({ children, interClassName }) {
   const pathname = usePathname();
@@ -20,6 +21,7 @@ export default function ClientLayout({ children, interClassName }) {
           <main>{children}</main>
           <Footer />
           <Toaster />
+          <ConsentBanner />
         </>
       )}
     </div>

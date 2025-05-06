@@ -3,6 +3,11 @@ import { connectToDatabase } from '@/lib/db';
 import Artist from '@/models/Artist';
 import { fetchArtistFromSpotify } from '@/lib/api';
 
+/**
+ * Cache revalidation config for artists
+ */
+export const revalidate = 300; // Revalidate every 5 minutes
+
 // Get all artists
 export async function GET(request) {
   try {
@@ -13,6 +18,14 @@ export async function GET(request) {
     const limit = parseInt(searchParams.get('limit') || '50');
     const page = parseInt(searchParams.get('page') || '1');
     const skip = (page - 1) * limit;
+    
+    // Calculate cache TTL based on params
+    let cacheTTL = 3600; // Default 1 hour for normal paginated results
+    
+    // Adjust cache TTL based on query parameters
+    if (fetchAll) {
+      cacheTTL = 1800; // 30 minutes for fetchAll=true requests
+    }
     
     // Create base query
     let artistsQuery = Artist.find({})
@@ -27,7 +40,8 @@ export async function GET(request) {
     const artists = await artistsQuery;
     const total = await Artist.countDocuments({});
     
-    return NextResponse.json({
+    // Create response with cache headers
+    const response = NextResponse.json({
       artists,
       pagination: {
         total,
@@ -36,6 +50,14 @@ export async function GET(request) {
         limit: fetchAll ? total : limit
       }
     });
+    
+    // Set cache control headers
+    response.headers.set(
+      'Cache-Control',
+      `public, s-maxage=${cacheTTL}, stale-while-revalidate=${cacheTTL * 2}`
+    );
+    
+    return response;
   } catch (error) {
     console.error('Error fetching artists:', error);
     return NextResponse.json(
@@ -45,7 +67,7 @@ export async function GET(request) {
   }
 }
 
-// Create a new artist
+// Create a new artist - no caching for mutation endpoints
 export async function POST(request) {
   try {
     await connectToDatabase();
@@ -107,7 +129,11 @@ export async function POST(request) {
     
     const artist = await Artist.create(body);
     
-    return NextResponse.json(artist, { status: 201 });
+    // Set cache control headers to no-store for mutations
+    const response = NextResponse.json(artist, { status: 201 });
+    response.headers.set('Cache-Control', 'no-store');
+    
+    return response;
   } catch (error) {
     console.error('Error creating artist:', error);
     

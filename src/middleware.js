@@ -5,6 +5,27 @@ export async function middleware(request) {
   // Get the pathname of the request (e.g. /admin)
   const { pathname } = request.nextUrl;
   
+  // Initialize the response
+  let response = NextResponse.next();
+  
+  // Apply caching based on route patterns
+  if (pathname.match(/\.(jpe?g|png|gif|svg|webp|ico|woff2?|ttf|eot)$/i)) {
+    // Static assets cache for 1 week (604800s)
+    response.headers.set('Cache-Control', 'public, max-age=604800, immutable');
+  } else if (pathname.startsWith('/api')) {
+    // API responses should not be cached by default
+    response.headers.set('Cache-Control', 'no-store, must-revalidate');
+  } else if (pathname === '/' || pathname === '/about' || pathname === '/contact' || pathname === '/services') {
+    // Main marketing pages - cache for 1 hour but validate freshness (3600s)
+    response.headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400');
+  } else if (pathname.startsWith('/artists') || pathname.startsWith('/releases')) {
+    // Content pages - cache for 30 minutes but check for updates (1800s)
+    response.headers.set('Cache-Control', 'public, max-age=1800, s-maxage=3600, stale-while-revalidate=86400');
+  } else if (!pathname.startsWith('/admin') && !pathname.startsWith('/login')) {
+    // Default caching for all other public pages - 10 minutes (600s)
+    response.headers.set('Cache-Control', 'public, max-age=600, s-maxage=3600, stale-while-revalidate=7200');
+  }
+  
   // Check if the pathname starts with /admin
   const isAdminRoute = pathname.startsWith('/admin');
   
@@ -37,21 +58,24 @@ export async function middleware(request) {
         return NextResponse.redirect(new URL('/unauthorized', request.url));
       }
       
-      // If everything is ok, allow the request
-      return NextResponse.next();
+      // Admin routes should never be cached
+      response.headers.set('Cache-Control', 'no-store, max-age=0, must-revalidate');
+      
+      // Return the response
+      return response;
     } catch {
       // If token verification fails, redirect to login
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }
   
-  // For non-admin routes, just proceed
-  return NextResponse.next();
+  // Return the response with appropriate cache headers
+  return response;
 }
 
 export const config = {
   // Specify which paths this middleware should run on
   matcher: [
-    '/admin/:path*',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

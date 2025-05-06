@@ -14,6 +14,13 @@ import { FullPageLoader } from '@/components/ui/LoadingSpinner';
 import { FullPageError } from '@/components/ui/ErrorDisplay';
 import { Suspense } from 'react';
 
+// Define viewport separately from metadata
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export async function generateStaticParams() {
   try {
     await connectToDatabase();
@@ -48,40 +55,13 @@ export async function generateMetadata({ params }) {
   const releaseDate = new Date(release.releaseDate).toISOString();
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
   const canonicalUrl = `${baseUrl}/releases/${slug}`;
-
-  // Generate structured data for music
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'MusicRecording',
-    name: release.title,
-    byArtist: {
-      '@type': 'MusicGroup',
-      name: artistName,
-    },
-    duration: `PT${Math.floor(release.duration_ms / 1000)}S`,
-    image: imageUrl,
-    datePublished: releaseDate,
-    isrcCode: release.isrc,
-    url: canonicalUrl,
-    inAlbum: {
-      '@type': 'MusicAlbum',
-      name: release.title,
-    },
-    ...(release.spotifyUrl && {
-      potentialAction: {
-        '@type': 'ListenAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: `https://open.spotify.com/track/${release.spotifyUrl}`,
-          actionPlatform: 'http://schema.org/DesktopWebPlatform',
-        },
-      },
-    }),
-  };
+  
+  // Dynamic OG Image URL
+  const ogImageUrl = `${baseUrl}/api/og?slug=${slug}`;
 
   return {
     title: `${release.title} by ${artistName} | Soul Distribution`,
-    description: release.description || `Listen to ${release.title} by ${artistName}`,
+    description: release.description || `Listen to ${release.title} by ${artistName}. Stream now on all major platforms.`,
     alternates: {
       canonical: canonicalUrl,
     },
@@ -92,7 +72,7 @@ export async function generateMetadata({ params }) {
       url: canonicalUrl,
       images: [
         {
-          url: imageUrl,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: `${release.title} cover art`,
@@ -109,7 +89,7 @@ export async function generateMetadata({ params }) {
       card: 'summary_large_image',
       title: `${release.title} by ${artistName}`,
       description: release.description || `Stream ${release.title} on all major platforms`,
-      images: [imageUrl],
+      images: [ogImageUrl],
     },
     other: {
       'music:musician': artistName,
@@ -172,28 +152,8 @@ async function ReleasePageContent({ slug }) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
     const canonicalUrl = `${baseUrl}/releases/${slug}`;
 
-    // Generate JSON-LD data
-    const jsonLd = {
-      '@context': 'https://schema.org',
-      '@type': 'MusicRecording',
-      name: data.release.title,
-      byArtist: {
-        '@type': 'MusicGroup',
-        name: data.release.artists[0]?.name || 'Unknown Artist',
-      },
-      duration: `PT${Math.floor(data.release.duration_ms / 1000)}S`,
-      image: data.release.coverImage,
-      datePublished: new Date(data.release.releaseDate).toISOString(),
-      isrcCode: data.release.isrc,
-      url: canonicalUrl,
-    };
-    
     return (
       <>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
         <ReleaseDetails release={data.release} moreReleases={data.moreReleases} />
       </>
     );

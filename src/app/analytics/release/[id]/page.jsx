@@ -30,12 +30,41 @@ function formatDate(dateString) {
 // Random colors for pie chart
 const COLORS = ['#8b5cf6', '#6366f1', '#3b82f6', '#0ea5e9', '#06b6d4', '#14b8a6'];
 
+// Responsive pie chart sizing
+const useResponsiveRadius = () => {
+  const [radius, setRadius] = useState({ inner: 60, outer: 90 });
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setRadius({ inner: 40, outer: 65 }); // Small screens
+      } else if (window.innerWidth < 1024) {
+        setRadius({ inner: 50, outer: 80 }); // Medium screens
+      } else {
+        setRadius({ inner: 60, outer: 90 }); // Large screens
+      }
+    };
+
+    // Initial calculation
+    handleResize();
+
+    // Add event listener
+    window.addEventListener('resize', handleResize);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return radius;
+};
+
 export default function ReleaseAnalyticsPage({ params }) {
   const { id } = params;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [release, setRelease] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const pieRadius = useResponsiveRadius();
 
   useEffect(() => {
     const fetchReleaseAnalytics = async () => {
@@ -101,14 +130,14 @@ export default function ReleaseAnalyticsPage({ params }) {
         {loading ? (
           <div className="h-8 w-64 bg-gray-800 animate-pulse rounded"></div>
         ) : (
-          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-purple-400">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 text-purple-400 break-words">
             {release?.title || 'Release Analytics'}
           </h1>
         )}
         
         {release && (
-          <div className="flex items-center text-gray-400">
-            <Music className="h-4 w-4 mr-1" />
+          <div className="flex flex-wrap items-center text-gray-400">
+            <Music className="h-4 w-4 mr-1 flex-shrink-0" />
             <span className="mr-2">
               {release.artists.map((a, index) => (
                 <span key={a._id}>
@@ -118,11 +147,11 @@ export default function ReleaseAnalyticsPage({ params }) {
                   >
                     {a.name}
                   </Link>
-                  {index < release.artists.length - 1 && ', '}
+                  {index < release.artists.length - 1 && <span className="mx-0.5">,</span>}
                 </span>
               ))}
             </span>
-            <Badge variant="outline" className="bg-gray-800 text-purple-300 border-purple-800">
+            <Badge variant="outline" className="bg-gray-800 text-purple-300 border-purple-800 mt-1 sm:mt-0">
               {release.type}
             </Badge>
           </div>
@@ -144,7 +173,7 @@ export default function ReleaseAnalyticsPage({ params }) {
       ) : (
         <>
           {/* Stats Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader className="pb-2">
                 <CardTitle className="text-gray-300 text-lg">Total Streams</CardTitle>
@@ -249,7 +278,7 @@ export default function ReleaseAnalyticsPage({ params }) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-60 sm:h-72 md:h-80">
                   {(analytics?.totalStreams > 0 || analytics?.totalDownloads > 0) ? (
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
@@ -260,8 +289,8 @@ export default function ReleaseAnalyticsPage({ params }) {
                           ]}
                           cx="50%"
                           cy="50%"
-                          innerRadius={60}
-                          outerRadius={90}
+                          innerRadius={pieRadius.inner}
+                          outerRadius={pieRadius.outer}
                           paddingAngle={5}
                           dataKey="value"
                           label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -303,21 +332,21 @@ export default function ReleaseAnalyticsPage({ params }) {
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-white">Streaming Stats</h3>
                       <div className="bg-gray-800 p-4 rounded-lg space-y-2">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Current Streams:</span>
                           <span className="text-white font-medium">{formatNumber(analytics.latestData.streams.count)}</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Percentage:</span>
                           <span className="text-white font-medium">{analytics.latestData.streams.percentage}%</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Recent Change:</span>
                           <span className={`font-medium ${analytics.latestData.streams.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {analytics.latestData.streams.change >= 0 ? '+' : ''}{formatNumber(analytics.latestData.streams.change)}
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Change Percentage:</span>
                           <span className={`font-medium ${analytics.latestData.streams.changePercentage >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {analytics.latestData.streams.changePercentage >= 0 ? '+' : ''}{analytics.latestData.streams.changePercentage}%
@@ -329,21 +358,21 @@ export default function ReleaseAnalyticsPage({ params }) {
                     <div className="space-y-4">
                       <h3 className="text-lg font-medium text-white">Download Stats</h3>
                       <div className="bg-gray-800 p-4 rounded-lg space-y-2">
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Current Downloads:</span>
                           <span className="text-white font-medium">{formatNumber(analytics.latestData.downloads.count)}</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Percentage:</span>
                           <span className="text-white font-medium">{analytics.latestData.downloads.percentage}%</span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Recent Change:</span>
                           <span className={`font-medium ${analytics.latestData.downloads.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {analytics.latestData.downloads.change >= 0 ? '+' : ''}{formatNumber(analytics.latestData.downloads.change)}
                           </span>
                         </div>
-                        <div className="flex justify-between">
+                        <div className="flex justify-between flex-wrap">
                           <span className="text-gray-400">Change Percentage:</span>
                           <span className={`font-medium ${analytics.latestData.downloads.changePercentage >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {analytics.latestData.downloads.changePercentage >= 0 ? '+' : ''}{analytics.latestData.downloads.changePercentage}%

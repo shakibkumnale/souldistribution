@@ -145,14 +145,14 @@ export default function AnalyticsPage() {
   return (
     <div className="container mx-auto max-w-7xl p-4 md:p-6 bg-gray-950 text-gray-100 min-h-screen">
       <header className="mb-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-purple-400">Streaming Analytics</h1>
             <p className="text-gray-400">Track your music's performance across streaming platforms</p>
           </div>
           
           <div className="flex items-center space-x-2">
-            <div className="w-64">
+            <div className="w-full sm:w-64">
               <Select value={artistFilter} onValueChange={handleArtistChange}>
                 <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                   <div className="flex items-center">
@@ -194,19 +194,19 @@ export default function AnalyticsPage() {
         </div>
         
         {currentArtist && (
-          <div className="bg-purple-900/30 border border-purple-800 rounded-md px-4 py-3 mb-4 flex items-center">
+          <div className="bg-purple-900/30 border border-purple-800 rounded-md px-4 py-3 mb-4 flex flex-col sm:flex-row sm:items-center">
             {currentArtist.image && (
               <img 
                 src={currentArtist.image} 
                 alt={currentArtist.name} 
-                className="w-10 h-10 rounded-full mr-3 object-cover border border-purple-700"
+                className="w-10 h-10 rounded-full mr-3 object-cover border border-purple-700 mb-2 sm:mb-0"
               />
             )}
             <div>
-              <p className="text-purple-200 flex items-center">
+              <p className="text-purple-200 flex flex-wrap items-center">
                 <Filter className="w-4 h-4 mr-2" />
                 Showing data for <span className="font-semibold ml-1">{currentArtist.name}</span>
-                <Badge className="ml-3 bg-purple-800">{analyticsData.length} releases</Badge>
+                <Badge className="ml-3 bg-purple-800 mt-1 sm:mt-0">{analyticsData.length} releases</Badge>
               </p>
               {currentArtist.slug && (
                 <Link href={`/artists/${currentArtist.slug}`} className="text-xs text-purple-400 hover:text-purple-300">
@@ -243,7 +243,7 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="bg-gray-900 border-gray-700">
+          <TabsList className="bg-gray-900 border-gray-700 flex w-full overflow-x-auto">
             <TabsTrigger value="overview" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
               Overview
             </TabsTrigger>
@@ -259,7 +259,7 @@ export default function AnalyticsPage() {
           
           <TabsContent value="overview" className="space-y-4">
             {/* Overview tab content */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader>
                   <CardTitle className="text-gray-200">Total Streams</CardTitle>
@@ -345,75 +345,77 @@ export default function AnalyticsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-gray-800">
-                        <th className="px-4 py-3">Release</th>
-                        <th className="px-4 py-3">Artist</th>
-                        <th className="px-4 py-3 text-right">Streams</th>
-                        <th className="px-4 py-3 text-right">Downloads</th>
-                        <th className="px-4 py-3 text-right">Latest Report</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {analyticsData.map((item, index) => (
-                        <tr key={item.releaseId} className={index % 2 === 1 ? 'bg-gray-800/30' : ''}>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center">
-                              {item.coverImage && (
-                                <img 
-                                  src={item.coverImage} 
-                                  alt={item.title} 
-                                  className="w-10 h-10 rounded mr-3 object-cover"
-                                />
-                              )}
-                              <div>
-                                <Link 
-                                  href={`/releases/${item.slug}`} 
-                                  className="text-purple-400 hover:text-purple-300 font-medium"
-                                >
-                                  {item.title}
-                                </Link>
-                                {item.landrTrackId && (
-                                  <div className="text-xs text-gray-500">ID: {item.landrTrackId}</div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex flex-wrap gap-1">
-                              {item.artists.map((artist, i) => (
-                                <span key={artist._id}>
-                                  <Link 
-                                    href={`/artists/${artist.slug}`}
-                                    className="text-gray-300 hover:text-purple-300"
-                                  >
-                                    {artist.name}
-                                  </Link>
-                                  {i < item.artists.length - 1 && ", "}
-                                </span>
-                              ))}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <span className="font-medium">{formatNumber(item.totalStreams)}</span>
-                            {item.latestData?.streams?.percentage && (
-                              <div className="text-xs text-gray-400">
-                                {item.latestData.streams.percentage}% of total
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <span className="font-medium">{formatNumber(item.totalDownloads)}</span>
-                          </td>
-                          <td className="px-4 py-3 text-right text-gray-400">
-                            {item.latestDate ? new Date(item.latestDate).toLocaleDateString() : '-'}
-                          </td>
+                <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="inline-block min-w-full align-middle sm:px-0 px-4">
+                    <table className="min-w-full divide-y divide-gray-800">
+                      <thead>
+                        <tr className="border-b border-gray-800">
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Release</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Artist</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Streams</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Downloads</th>
+                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Latest Report</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {analyticsData.map((item, index) => (
+                          <tr key={item.releaseId} className={index % 2 === 1 ? 'bg-gray-800/30' : ''}>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center">
+                                {item.coverImage && (
+                                  <img 
+                                    src={item.coverImage} 
+                                    alt={item.title} 
+                                    className="w-10 h-10 rounded mr-3 object-cover flex-shrink-0"
+                                  />
+                                )}
+                                <div className="min-w-0">
+                                  <Link 
+                                    href={`/releases/${item.slug}`} 
+                                    className="text-purple-400 hover:text-purple-300 font-medium block truncate"
+                                  >
+                                    {item.title}
+                                  </Link>
+                                  {item.landrTrackId && (
+                                    <div className="text-xs text-gray-500 truncate">ID: {item.landrTrackId}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-wrap gap-1">
+                                {item.artists.map((artist, i) => (
+                                  <span key={artist._id} className="inline-flex">
+                                    <Link 
+                                      href={`/artists/${artist.slug}`}
+                                      className="text-gray-300 hover:text-purple-300"
+                                    >
+                                      {artist.name}
+                                    </Link>
+                                    {i < item.artists.length - 1 && <span className="mx-0.5">,</span>}
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="font-medium">{formatNumber(item.totalStreams)}</span>
+                              {item.latestData?.streams?.percentage && (
+                                <div className="text-xs text-gray-400">
+                                  {item.latestData.streams.percentage}% of total
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <span className="font-medium">{formatNumber(item.totalDownloads)}</span>
+                            </td>
+                            <td className="px-4 py-3 text-right text-gray-400">
+                              {item.latestDate ? new Date(item.latestDate).toLocaleDateString() : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -423,7 +425,7 @@ export default function AnalyticsPage() {
             <TabsContent value="artist" className="space-y-4">
               {/* Artist-specific content */}
               <Card className="bg-gray-900 border-gray-800">
-                <CardHeader className="flex flex-row items-center space-x-4">
+                <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
                   {currentArtist.image && (
                     <img 
                       src={currentArtist.image} 
@@ -439,10 +441,10 @@ export default function AnalyticsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <h3 className="text-lg font-medium text-gray-300 mb-4">Performance Overview</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="bg-gray-800 rounded-lg p-4">
                           <div className="text-gray-400 text-sm mb-1">Total Streams</div>
                           <div className="text-2xl font-bold text-purple-400">{formatNumber(totalStreams)}</div>
@@ -475,7 +477,7 @@ export default function AnalyticsPage() {
                               <img 
                                 src={item.coverImage} 
                                 alt={item.title} 
-                                className="w-12 h-12 rounded mr-3 object-cover"
+                                className="w-12 h-12 rounded mr-3 object-cover flex-shrink-0"
                               />
                             )}
                             <div className="flex-1 min-w-0">
@@ -489,7 +491,7 @@ export default function AnalyticsPage() {
                                 {new Date(item.latestDate).toLocaleDateString()}
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-right flex-shrink-0">
                               <div className="text-lg font-medium text-gray-200">{formatNumber(item.totalStreams)}</div>
                               <div className="text-xs text-gray-400">streams</div>
                             </div>

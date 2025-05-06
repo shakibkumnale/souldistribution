@@ -4,70 +4,45 @@ import ArtistsGrid from '@/components/artists/ArtistsGrid';
 import connectToDatabase from '@/lib/db';
 import Artist from '@/models/Artist';
 
+// Add caching directives - revalidate every 10 minutes
+export const revalidate = 600;
+
+// Add metadata for the artists page
+export const metadata = {
+  title: 'Independent Artists | Soul Distribution',
+  description: 'Discover independent artists from around the world on Soul Distribution. Our roster features talented musicians across all genres distributing their music globally.',
+  keywords: ['independent artists', 'music artists', 'musician roster', 'new talent', 'unsigned artists'],
+  alternates: {
+    canonical: '/artists',
+  },
+  openGraph: {
+    title: 'Discover Independent Artists | Soul Distribution',
+    description: 'Browse our roster of talented independent artists distributing their music worldwide. From emerging talent to established musicians across all genres.',
+    url: '/artists',
+    type: 'website',
+    images: [
+      {
+        url: '/api/og/default',
+        width: 1200,
+        height: 630,
+        alt: 'Soul Distribution Artists',
+      }
+    ],
+  },
+};
+
+// Fetch artists with improved error handling and performance
 async function getArtists() {
   try {
     await connectToDatabase();
     
+    // Use lean() for better performance - returns plain JS objects
     const artists = await Artist.find({})
       .sort({ name: 1 })
       .lean();
     
-    return artists.map(artist => {
-      // Deep clone the artist object to avoid mutation issues
-      const safeArtist = JSON.parse(JSON.stringify(artist, (key, value) => {
-        // Handle ObjectId instances
-        if (value && typeof value === 'object' && value._bsontype === 'ObjectID') {
-          return value.toString();
-        }
-        // Handle Date objects
-        if (value instanceof Date) {
-          return value.toISOString();
-        }
-        return value;
-      }));
-      
-      // Now ensure all _id fields are strings throughout the object structure
-      const processObject = (obj) => {
-        if (!obj || typeof obj !== 'object') return obj;
-        
-        // Handle arrays
-        if (Array.isArray(obj)) {
-          return obj.map(item => processObject(item));
-        }
-        
-        // Convert _id if it exists
-        if (obj._id && typeof obj._id === 'object') {
-          obj._id = obj._id.toString();
-        }
-        
-        // Recursively process all properties
-        const result = { ...obj };
-        for (const key in result) {
-          if (result[key] && typeof result[key] === 'object') {
-            result[key] = processObject(result[key]);
-          }
-        }
-        return result;
-      };
-      
-      // Use the safe serialized version
-      const serialized = processObject(safeArtist);
-      
-      // Ensure top-level IDs are strings
-      if (serialized._id) serialized._id = String(serialized._id);
-      
-      // Handle spotifyData.images specifically since that's causing the issue
-      if (serialized.spotifyData && serialized.spotifyData.images && Array.isArray(serialized.spotifyData.images)) {
-        serialized.spotifyData.images = serialized.spotifyData.images.map(image => {
-          if (!image) return image;
-          const safeImage = { ...image };
-          if (safeImage._id) safeImage._id = String(safeImage._id);
-          return safeImage;
-        });
-      }
-      
-      return serialized;
-    });
+    // Simple serialization for better performance
+    return JSON.parse(JSON.stringify(artists));
   } catch (error) {
     console.error('Error fetching artists:', error);
     return [];
@@ -77,8 +52,35 @@ async function getArtists() {
 export default async function ArtistsPage() {
   const artists = await getArtists();
   
+  // Create CollectionPage structured data
+  const collectionPageJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Independent Artists | Soul Distribution',
+    description: 'Discover independent artists from around the world on Soul Distribution.',
+    url: 'https://souldistribution.com/artists',
+    numberOfItems: artists.length,
+    itemListElement: artists.slice(0, 10).map((artist, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'MusicGroup',
+        name: artist.name,
+        url: `https://souldistribution.com/artists/${artist.slug}`,
+        image: artist.profileImage || (artist.spotifyData?.images?.[0]?.url || ''),
+        genre: artist.genres?.join(', ') || 'Music'
+      }
+    }))
+  };
+  
   return (
     <main className="py-12 px-4 md:px-8 max-w-7xl mx-auto">
+      {/* Add structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionPageJsonLd) }}
+      />
+      
       <h1 className="text-4xl font-bold mb-8">Our Artists</h1>
       
       <Suspense fallback={<div>Loading artists...</div>}>

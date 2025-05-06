@@ -3,6 +3,151 @@
  */
 import { getSpotifyAccessToken, refreshSpotifyToken } from './spotify-auth';
 import { generateSlug } from './utils';
+import { getWithCache, generateCacheKey, clearCache } from '@/lib/cache';
+
+const API_BASE_URL = '/api';
+
+/**
+ * Fetch data from the API with caching
+ * @param {string} endpoint - API endpoint
+ * @param {Object} options - Fetch options
+ * @param {Object} cacheOptions - Cache options
+ * @returns {Promise<any>} - API response data
+ */
+export async function fetchAPI(
+  endpoint, 
+  options = {}, 
+  cacheOptions = { useCache: true, ttl: null }
+) {
+  const { useCache = true, ttl = null } = cacheOptions;
+  const url = `${API_BASE_URL}${endpoint}`;
+  
+  // Use default GET method if not specified
+  const fetchOptions = {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    ...options,
+  };
+  
+  // Only cache GET requests
+  if (useCache && fetchOptions.method === 'GET') {
+    const cacheKey = generateCacheKey(url, options.params);
+    
+    return getWithCache(
+      cacheKey,
+      async () => {
+        const response = await fetch(url, fetchOptions);
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        return response.json();
+      },
+      ttl
+    );
+  }
+  
+  // For non-cached requests or non-GET methods
+  const response = await fetch(url, fetchOptions);
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+/**
+ * GET request with caching
+ * @param {string} endpoint - API endpoint
+ * @param {Object} params - Query parameters
+ * @param {Object} cacheOptions - Cache options
+ * @returns {Promise<any>} - API response data
+ */
+export function get(endpoint, params = {}, cacheOptions = {}) {
+  // Convert params to URL query string
+  const queryString = new URLSearchParams(params).toString();
+  const urlWithParams = queryString ? `${endpoint}?${queryString}` : endpoint;
+  
+  return fetchAPI(urlWithParams, { method: 'GET' }, cacheOptions);
+}
+
+/**
+ * POST request (not cached)
+ * @param {string} endpoint - API endpoint
+ * @param {Object} data - Request body data
+ * @returns {Promise<any>} - API response data
+ */
+export function post(endpoint, data = {}) {
+  return fetchAPI(
+    endpoint, 
+    { 
+      method: 'POST', 
+      body: JSON.stringify(data)
+    },
+    { useCache: false }
+  );
+}
+
+/**
+ * PUT request (not cached)
+ * @param {string} endpoint - API endpoint
+ * @param {Object} data - Request body data
+ * @returns {Promise<any>} - API response data
+ */
+export function put(endpoint, data = {}) {
+  return fetchAPI(
+    endpoint, 
+    { 
+      method: 'PUT', 
+      body: JSON.stringify(data) 
+    },
+    { useCache: false }
+  );
+}
+
+/**
+ * PATCH request (not cached)
+ * @param {string} endpoint - API endpoint
+ * @param {Object} data - Request body data
+ * @returns {Promise<any>} - API response data
+ */
+export function patch(endpoint, data = {}) {
+  return fetchAPI(
+    endpoint, 
+    { 
+      method: 'PATCH', 
+      body: JSON.stringify(data) 
+    },
+    { useCache: false }
+  );
+}
+
+/**
+ * DELETE request (not cached)
+ * @param {string} endpoint - API endpoint
+ * @returns {Promise<any>} - API response data
+ */
+export function del(endpoint) {
+  return fetchAPI(
+    endpoint, 
+    { method: 'DELETE' },
+    { useCache: false }
+  );
+}
+
+/**
+ * Invalidate cache for an endpoint
+ * @param {string} endpoint - API endpoint to invalidate in cache
+ * @param {Object} params - Query parameters
+ */
+export function invalidateCache(endpoint, params = {}) {
+  const cacheKey = generateCacheKey(`${API_BASE_URL}${endpoint}`, params);
+  clearCache(cacheKey);
+}
 
 // Fetch data from Spotify API with automatic token handling
 export async function fetchFromSpotify(endpoint, token = null) {

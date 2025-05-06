@@ -3,9 +3,34 @@ import PlansSection from '@/components/services/PlansSection';
 import PlansComparison from '@/components/services/PlansComparison';
 import FeatureList from '@/components/services/FeatureList';
 
+// Define viewport separately from metadata
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
-  title: 'Distribution Services | SoulDistribution',
-  description: 'Music distribution services for indie artists - get your music on Spotify, Apple Music, YouTube Music and more.',
+  title: 'Music Distribution Services | Soul Distribution',
+  description: 'Distribute your music to 150+ platforms including Spotify, Apple Music, YouTube Music, Instagram and TikTok. Choose from flexible plans with up to 100% royalties for independent artists.',
+  keywords: ['music distribution', 'artist services', 'spotify distribution', 'youtube oac', 'music marketing', 'independent artists', 'royalty distribution'],
+  alternates: {
+    canonical: '/services',
+  },
+  openGraph: {
+    title: 'Music Distribution Services | Soul Distribution',
+    description: 'Distribute your music to 150+ platforms with flexible plans offering up to 100% royalties. Get verified on YouTube with our Official Artist Channel service.',
+    url: '/services',
+    type: 'website',
+    images: [
+      {
+        url: '/api/og/default',
+        width: 1200,
+        height: 630,
+        alt: 'Soul Distribution Music Services',
+      }
+    ],
+  },
 };
 
 const plans = [
@@ -115,8 +140,71 @@ const faqItems = [
 ];
 
 const ServicesPage = () => {
+  // Create service offering structured data
+  const serviceOfferingsJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Music Distribution Services',
+    description: 'Comprehensive music distribution services for independent artists',
+    numberOfItems: plans.length + 1, // +1 for the YouTube OAC plan
+    itemListElement: [
+      ...plans.map((plan, index) => ({
+        '@type': 'Service',
+        position: index + 1,
+        name: plan.name,
+        description: plan.description,
+        offers: {
+          '@type': 'Offer',
+          price: plan.price,
+          priceCurrency: 'INR',
+          availability: 'https://schema.org/InStock',
+          priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+        },
+        termsOfService: 'https://souldistribution.com/terms'
+      })),
+      {
+        '@type': 'Service',
+        position: plans.length + 1,
+        name: youtubeOAC.name,
+        description: youtubeOAC.description,
+        offers: {
+          '@type': 'Offer',
+          price: youtubeOAC.price,
+          priceCurrency: 'INR',
+          availability: 'https://schema.org/InStock',
+          priceValidUntil: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString(),
+        },
+        termsOfService: 'https://souldistribution.com/terms'
+      }
+    ]
+  };
+
+  // FAQ structured data
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map(item => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer
+      }
+    }))
+  };
+
   return (
     <div className="w-full overflow-hidden bg-gradient-to-b from-gray-950 to-black text-gray-200">
+      {/* Add structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceOfferingsJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-purple-950 to-indigo-950 py-20">
         <div className="container mx-auto px-4">
