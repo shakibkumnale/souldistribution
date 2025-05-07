@@ -5,7 +5,8 @@ import { jwtVerify } from 'jose';
 export async function GET() {
   try {
     const cookieStore = cookies();
-    const token = (await cookieStore.get('auth-token'))?.value;
+    const tokenCookie = await cookieStore.get('auth-token');
+    const token = tokenCookie?.value;
 
     if (!token) {
       return NextResponse.json(
