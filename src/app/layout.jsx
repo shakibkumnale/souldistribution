@@ -13,6 +13,12 @@ const inter = Inter({
 
 const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
 export const metadata = {
   title: 'Soul Distribution - Music Distribution & YouTube OAC Services',
   description: 'Soul Distribution helps independent artists distribute music worldwide to all major streaming platforms and get verified on YouTube with monetization services.',
@@ -60,12 +66,6 @@ export const metadata = {
       index: true,
       follow: true,
     },
-  },
-  // Add viewport settings for better mobile experience and performance
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 5,
   },
 };
 

@@ -91,37 +91,23 @@ export default function AdminReleases() {
         }
         const releasesData = await releasesResponse.json();
         
-        // Debug release data
-        console.log('Raw releases data:', releasesData);
-        
-        // Ensure all releases have string IDs
-        const processedReleases = (releasesData.releases || []).map(release => {
-          // Debug each release
-          console.log('Processing release:', release);
-          console.log('Release _id type:', typeof release._id);
-          
-          // Ensure the _id is a valid string
-          const releaseId = ensureString(release._id);
-          console.log('Processed release ID:', releaseId);
+        // Process release data to ensure consistent ID formats and add keys for React
+        const processedReleases = releasesData.releases.map(release => {
+          const releaseId = typeof release._id === 'object' 
+            ? release._id.toString() 
+            : release._id;
           
           return {
             ...release,
             _id: releaseId,
-            artists: (release.artists || []).map(artist => {
-              if (typeof artist === 'string') return artist;
-              return {
-                ...artist,
-                _id: ensureString(artist._id)
-              };
-            })
+            key: releaseId // Add a key prop for React
           };
         });
         
-        console.log('Processed releases:', processedReleases);
         setReleases(processedReleases);
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Don't set error state to avoid confusion with form errors
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -137,9 +123,6 @@ export default function AdminReleases() {
     setSuccess('');
     
     try {
-      console.log('Submitting release data:', formData);
-      console.log('landrTrackId in new release data:', formData.landrTrackId);
-      
       // Ensure landrTrackId is explicitly included
       const submissionData = {
         ...formData,
@@ -219,7 +202,6 @@ export default function AdminReleases() {
                     // Debug each release ID before rendering
                     const releaseId = ensureString(release._id);
                     const releaseSlug = release.slug || `release-${index}`;
-                    console.log(`Release ${index}:`, { id: releaseId, slug: releaseSlug });
                     
                     return (
                       <div key={`release-${index}`} className="flex items-center justify-between p-4 border rounded-lg">

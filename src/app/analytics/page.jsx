@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -10,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from 'recharts';
 import { Play, Music, Download, TrendingUp, AlertCircle, Loader2, Filter, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
+import { fetchAnalytics, setArtistFilter } from '@/store/slices/analyticsSlice';
 
 // Helper function to format large numbers
 function formatNumber(num) {
@@ -23,54 +25,31 @@ function formatNumber(num) {
 }
 
 export default function AnalyticsPage() {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [analyticsData, setAnalyticsData] = useState([]);
-  const [recentReports, setRecentReports] = useState([]);
+  const dispatch = useDispatch();
+  const { 
+    analyticsData, 
+    recentReports, 
+    currentArtist, 
+    artists, 
+    loading, 
+    error, 
+    isFiltering,
+    lastFetched
+  } = useSelector((state) => state.analytics);
+  
   const [activeTab, setActiveTab] = useState('overview');
-  const [artistFilter, setArtistFilter] = useState('all');
-  const [artists, setArtists] = useState([]);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [currentArtist, setCurrentArtist] = useState(null);
+  const [artistFilter, setArtistFilterState] = useState('all');
 
-  const fetchAnalytics = async (artistId = '') => {
-    try {
-      setIsFiltering(!!artistId);
-      setLoading(true);
-      setError('');
-      
-      // Build URL with potential artist filter
-      const url = artistId 
-        ? `/api/analytics?artist=${artistId}` 
-        : '/api/analytics';
-      
-      const response = await fetch(url);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch analytics data');
-      }
-      
-      const data = await response.json();
-      setAnalyticsData(data.analytics || []);
-      setRecentReports(data.recentReports || []);
-      setCurrentArtist(data.currentArtist || null);
-      
-      // Only set artists list if we're not filtering
-      if (data.artists) {
-        setArtists(data.artists);
-      }
-    } catch (err) {
-      console.error('Error fetching analytics:', err);
-      setError(err.message || 'An error occurred while fetching data');
-    } finally {
-      setLoading(false);
-      setIsFiltering(false);
-    }
-  };
-
+  // Fetch analytics data with caching
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    // Set a time threshold for re-fetching (e.g., 5 minutes = 300000 ms)
+    const CACHE_TIME = 5 * 60 * 1000;
+    
+    // Only fetch if we don't have data or if the cache is stale
+    if (!lastFetched || Date.now() - lastFetched > CACHE_TIME) {
+      dispatch(fetchAnalytics());
+    }
+  }, [dispatch, lastFetched]);
 
   // Handle query string for artist filtering
   useEffect(() => {
@@ -80,17 +59,18 @@ export default function AnalyticsPage() {
       const artistId = params.get('artist');
       
       if (artistId) {
-        setArtistFilter(artistId);
-        fetchAnalytics(artistId);
+        setArtistFilterState(artistId);
+        dispatch(fetchAnalytics(artistId));
       } else {
-        setArtistFilter('all');
+        setArtistFilterState('all');
       }
     }
-  }, []);
+  }, [dispatch]);
 
   const handleArtistChange = (value) => {
-    setArtistFilter(value);
-    fetchAnalytics(value === 'all' ? '' : value);
+    setArtistFilterState(value);
+    dispatch(fetchAnalytics(value === 'all' ? '' : value));
+    dispatch(setArtistFilter(value));
     
     // Update URL with query parameter
     if (typeof window !== 'undefined') {
@@ -105,8 +85,9 @@ export default function AnalyticsPage() {
   };
 
   const clearFilter = () => {
-    setArtistFilter('all');
-    fetchAnalytics('');
+    setArtistFilterState('all');
+    dispatch(fetchAnalytics(''));
+    dispatch(setArtistFilter('all'));
     
     // Remove query parameter from URL
     if (typeof window !== 'undefined') {

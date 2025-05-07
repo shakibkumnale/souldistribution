@@ -1,51 +1,29 @@
 // src/app/admin/page.jsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Users, Music2, PlayCircle, TrendingUp, User, UserPlus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import DashboardStats from '@/components/admin/DashboardStats';
+import { fetchDashboardData } from '@/store/slices/dashboardSlice';
 
 export default function AdminDashboard() {
-  const [stats, setStats] = useState({
-    totalArtists: 0,
-    totalReleases: 0,
-    totalStreams: 0,
-    growthRate: 0,
-    popularArtists: [],
-    planCounts: {
-      basic: 0,
-      pro: 0,
-      premium: 0,
-      aoc: 0
-    }
-  });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
+  const { stats, loading, error, lastFetched } = useSelector((state) => state.dashboard);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch('/api/dashboard/stats');
-        if (!response.ok) {
-          throw new Error('Failed to fetch dashboard data');
-        }
-        const data = await response.json();
-        setStats(data);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Set a time threshold for re-fetching (e.g., 5 minutes = 300000 ms)
+    const CACHE_TIME = 5 * 60 * 1000;
+    
+    // Only fetch if we don't have data or if the cache is stale
+    if (!lastFetched || Date.now() - lastFetched > CACHE_TIME) {
+      dispatch(fetchDashboardData());
+    }
+  }, [dispatch, lastFetched]);
 
-    fetchDashboardData();
-  }, []);
-
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>

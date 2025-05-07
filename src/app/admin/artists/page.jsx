@@ -314,7 +314,6 @@ function ArtistForm({ artist, onSuccess }) {
 
   useEffect(() => {
     if (artist) {
-      console.log('Artist data changed, updating form:', artist);
       setFormData({
         name: artist.name || '',
         slug: artist.slug || '',
@@ -465,8 +464,6 @@ function ArtistForm({ artist, onSuccess }) {
       const url = artist?._id ? `/api/artists/${artist._id}` : '/api/artists';
       const method = artist?._id ? 'PUT' : 'POST';
       
-      console.log(`Submitting artist to ${url} with method ${method}`);
-      
       const response = await fetch(url, {
         method,
         headers: {
@@ -481,7 +478,6 @@ function ArtistForm({ artist, onSuccess }) {
       }
 
       const savedArtist = await response.json();
-      console.log('Artist saved successfully:', savedArtist);
       
       onSuccess();
     } catch (error) {

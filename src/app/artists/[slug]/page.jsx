@@ -81,8 +81,6 @@ async function getArtistData(slug) {
     .sort({ releaseDate: -1 })
     .lean();
   
-  console.log(`Found ${releases.length} releases for artist ${artist.name} (ID: ${artist._id})`);
-  
   const releasesWithArtistInfo = releases.map(release => {
     return {
       ...release,
