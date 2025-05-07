@@ -13,6 +13,17 @@ import { Play, Music, Download, TrendingUp, AlertCircle, Loader2, Filter, Refres
 import Link from 'next/link';
 import { fetchAnalytics, setArtistFilter } from '@/store/slices/analyticsSlice';
 
+// CSS for hiding scrollbar but allowing scrolling
+const scrollbarStyles = `
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`;
+
 // Helper function to format large numbers
 function formatNumber(num) {
   if (num >= 1000000) {
@@ -125,6 +136,7 @@ export default function AnalyticsPage() {
 
   return (
     <div className="container mx-auto max-w-7xl p-4 md:p-6 bg-gray-950 text-gray-100 min-h-screen">
+      <style jsx global>{scrollbarStyles}</style>
       <header className="mb-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
@@ -132,10 +144,10 @@ export default function AnalyticsPage() {
             <p className="text-gray-400">Track your music's performance across streaming platforms</p>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <div className="w-full sm:w-64">
+          <div className="flex items-center space-x-2 w-full sm:w-auto">
+            <div className="w-full">
               <Select value={artistFilter} onValueChange={handleArtistChange}>
-                <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
+                <SelectTrigger className="bg-gray-900 border-gray-700 text-white w-full">
                   <div className="flex items-center">
                     <Filter className="w-4 h-4 mr-2 text-gray-400" />
                     <SelectValue placeholder="Filter by artist" />
@@ -164,7 +176,7 @@ export default function AnalyticsPage() {
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="bg-gray-900 border-gray-700 hover:bg-gray-800"
+                className="bg-gray-900 border-gray-700 hover:bg-gray-800 flex-shrink-0"
                 onClick={clearFilter}
                 disabled={isFiltering}
               >
@@ -224,15 +236,15 @@ export default function AnalyticsPage() {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="bg-gray-900 border-gray-700 flex w-full overflow-x-auto">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
+          <TabsList className="bg-gray-900 border-gray-700 flex w-full overflow-x-auto no-scrollbar">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white flex-1 sm:flex-none whitespace-nowrap">
               Overview
             </TabsTrigger>
-            <TabsTrigger value="releases" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
+            <TabsTrigger value="releases" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white flex-1 sm:flex-none whitespace-nowrap">
               Releases
             </TabsTrigger>
             {currentArtist && (
-              <TabsTrigger value="artist" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white">
+              <TabsTrigger value="artist" className="data-[state=active]:bg-purple-900 data-[state=active]:text-white flex-1 sm:flex-none whitespace-nowrap">
                 Artist Details
               </TabsTrigger>
             )}
@@ -240,9 +252,9 @@ export default function AnalyticsPage() {
           
           <TabsContent value="overview" className="space-y-4">
             {/* Overview tab content */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <CardTitle className="text-gray-200">Total Streams</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -254,7 +266,7 @@ export default function AnalyticsPage() {
               </Card>
               
               <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <CardTitle className="text-gray-200">Releases</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -266,7 +278,7 @@ export default function AnalyticsPage() {
               </Card>
               
               <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
+                <CardHeader className="pb-2">
                   <CardTitle className="text-gray-200">Latest Report</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -287,17 +299,17 @@ export default function AnalyticsPage() {
                 <CardDescription className="text-gray-400">Total streams for your most popular releases</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-80">
+                <div className="h-[250px] sm:h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={topReleasesChartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <BarChart data={topReleasesChartData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#333" />
                       <XAxis 
                         dataKey="name" 
                         stroke="#aaa" 
                         angle={-45} 
                         textAnchor="end" 
-                        tick={{ fontSize: 12 }}
-                        height={70}
+                        tick={{ fontSize: 10 }}
+                        height={50}
                       />
                       <YAxis stroke="#aaa" tickFormatter={formatNumber} />
                       <Tooltip 
@@ -328,74 +340,131 @@ export default function AnalyticsPage() {
               <CardContent>
                 <div className="overflow-x-auto -mx-4 sm:mx-0">
                   <div className="inline-block min-w-full align-middle sm:px-0 px-4">
-                    <table className="min-w-full divide-y divide-gray-800">
-                      <thead>
-                        <tr className="border-b border-gray-800">
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Release</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Artist</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Streams</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Downloads</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Latest Report</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {analyticsData.map((item, index) => (
-                          <tr key={item.releaseId} className={index % 2 === 1 ? 'bg-gray-800/30' : ''}>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center">
-                                {item.coverImage && (
-                                  <img 
-                                    src={item.coverImage} 
-                                    alt={item.title} 
-                                    className="w-10 h-10 rounded mr-3 object-cover flex-shrink-0"
-                                  />
-                                )}
-                                <div className="min-w-0">
-                                  <Link 
-                                    href={`/releases/${item.slug}`} 
-                                    className="text-purple-400 hover:text-purple-300 font-medium block truncate"
-                                  >
-                                    {item.title}
-                                  </Link>
-                                  {item.landrTrackId && (
-                                    <div className="text-xs text-gray-500 truncate">ID: {item.landrTrackId}</div>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex flex-wrap gap-1">
-                                {item.artists.map((artist, i) => (
-                                  <span key={artist._id} className="inline-flex">
-                                    <Link 
-                                      href={`/artists/${artist.slug}`}
-                                      className="text-gray-300 hover:text-purple-300"
-                                    >
-                                      {artist.name}
-                                    </Link>
-                                    {i < item.artists.length - 1 && <span className="mx-0.5">,</span>}
-                                  </span>
-                                ))}
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className="font-medium">{formatNumber(item.totalStreams)}</span>
-                              {item.latestData?.streams?.percentage && (
-                                <div className="text-xs text-gray-400">
-                                  {item.latestData.streams.percentage}% of total
-                                </div>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <span className="font-medium">{formatNumber(item.totalDownloads)}</span>
-                            </td>
-                            <td className="px-4 py-3 text-right text-gray-400">
-                              {item.latestDate ? new Date(item.latestDate).toLocaleDateString() : '-'}
-                            </td>
+                    <div className="max-h-[32rem] overflow-y-auto relative [scrollbar-width:thin] [scrollbar-color:#374151_#111827] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-900 [&::-webkit-scrollbar-thumb]:bg-gray-700 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb:hover]:bg-gray-600">
+                      {/* Table view for tablet and desktop */}
+                      <table className="min-w-full divide-y divide-gray-800 hidden sm:table">
+                        <thead className="sticky top-0 bg-gray-900 z-10">
+                          <tr className="border-b border-gray-800">
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Release</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Artist</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Streams</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Downloads</th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">Latest Report</th>
                           </tr>
+                        </thead>
+                        <tbody>
+                          {analyticsData.map((item, index) => (
+                            <tr key={item.releaseId} className={index % 2 === 1 ? 'bg-gray-800/30' : ''}>
+                              <td className="px-4 py-3">
+                                <div className="flex items-center">
+                                  {item.coverImage && (
+                                    <img 
+                                      src={item.coverImage} 
+                                      alt={item.title} 
+                                      className="w-10 h-10 rounded mr-3 object-cover flex-shrink-0"
+                                    />
+                                  )}
+                                  <div className="min-w-0">
+                                    <Link 
+                                      href={`/releases/${item.slug}`} 
+                                      className="text-purple-400 hover:text-purple-300 font-medium block truncate"
+                                    >
+                                      {item.title}
+                                    </Link>
+                                    {item.landrTrackId && (
+                                      <div className="text-xs text-gray-500 truncate">ID: {item.landrTrackId}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex flex-wrap gap-1">
+                                  {item.artists.map((artist, i) => (
+                                    <span key={artist._id} className="inline-flex">
+                                      <Link 
+                                        href={`/artists/${artist.slug}`}
+                                        className="text-gray-300 hover:text-purple-300"
+                                      >
+                                        {artist.name}
+                                      </Link>
+                                      {i < item.artists.length - 1 && <span className="mx-0.5">,</span>}
+                                    </span>
+                                  ))}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className="font-medium">{formatNumber(item.totalStreams)}</span>
+                                {item.latestData?.streams?.percentage && (
+                                  <div className="text-xs text-gray-400">
+                                    {item.latestData.streams.percentage}% of total
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className="font-medium">{formatNumber(item.totalDownloads)}</span>
+                              </td>
+                              <td className="px-4 py-3 text-right text-gray-400">
+                                {item.latestDate ? new Date(item.latestDate).toLocaleDateString() : '-'}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      
+                      {/* Card view for mobile */}
+                      <div className="sm:hidden space-y-3">
+                        {analyticsData.map((item) => (
+                          <div key={item.releaseId} className="bg-gray-800/30 rounded-lg p-3 border border-gray-800">
+                            <div className="flex items-center mb-2">
+                              {item.coverImage && (
+                                <img 
+                                  src={item.coverImage} 
+                                  alt={item.title} 
+                                  className="w-12 h-12 rounded mr-3 object-cover flex-shrink-0"
+                                />
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <Link 
+                                  href={`/releases/${item.slug}`} 
+                                  className="text-purple-400 hover:text-purple-300 font-medium block truncate"
+                                >
+                                  {item.title}
+                                </Link>
+                                <div className="flex flex-wrap gap-1 text-sm text-gray-300">
+                                  {item.artists.map((artist, i) => (
+                                    <span key={artist._id} className="inline-flex">
+                                      <Link 
+                                        href={`/artists/${artist.slug}`}
+                                        className="text-gray-300 hover:text-purple-300"
+                                      >
+                                        {artist.name}
+                                      </Link>
+                                      {i < item.artists.length - 1 && <span className="mx-0.5">,</span>}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                              <div>
+                                <div className="text-gray-400">Streams</div>
+                                <div className="font-medium text-white">{formatNumber(item.totalStreams)}</div>
+                              </div>
+                              <div>
+                                <div className="text-gray-400">Downloads</div>
+                                <div className="font-medium text-white">{formatNumber(item.totalDownloads)}</div>
+                              </div>
+                              <div className="col-span-2">
+                                <div className="text-gray-400">Latest Report</div>
+                                <div className="text-gray-300">
+                                  {item.latestDate ? new Date(item.latestDate).toLocaleDateString() : '-'}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
