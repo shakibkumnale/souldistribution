@@ -18,7 +18,7 @@ export async function GET(request) {
     const artist = searchParams.get('artist');
     const from = searchParams.get('from');
     const to = searchParams.get('to');
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const limit = parseInt(searchParams.get('limit') || '200', 10);
     
     // Build query
     const query = {};

@@ -5,10 +5,10 @@ export const fetchAnalytics = createAsyncThunk(
   'analytics/fetchAnalytics',
   async (artistId = '', { rejectWithValue }) => {
     try {
-      // Build URL with potential artist filter
+      // Build URL with potential artist filter and higher limit
       const url = artistId 
-        ? `/api/analytics?artist=${artistId}` 
-        : '/api/analytics';
+        ? `/api/analytics?artist=${artistId}&limit=100` 
+        : '/api/analytics?limit=100';
       
       const response = await fetch(url);
       
