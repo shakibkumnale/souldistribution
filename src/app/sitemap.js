@@ -25,7 +25,7 @@ export default async function sitemap() {
       .limit(artistLimit);
     
     // Base URL - replace with your actual domain
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.in';
     
     // Generate release URLs
     const releaseUrls = releases.map(release => ({
@@ -99,7 +99,7 @@ export default async function sitemap() {
   } catch (error) {
     console.error('Error generating sitemap:', error);
     // Return just the static pages in case of database error
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://souldistribution.in';
     return [
       {
         url: baseUrl,
