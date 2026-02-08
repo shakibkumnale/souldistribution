@@ -43,12 +43,10 @@ const nextConfig = {
   experimental: {
     // Removed optimizeCss as it requires critters to be installed server-side
     // optimizeCss: true, 
-    serverActions: {
-      allowedOrigins: ['souldistribution.com'],
+  serverActions: {
+      allowedOrigins: ['souldistribution.in'], // Change .com to .in here
     },
-    // Enable build time optimization and code splitting
     optimizePackageImports: ['react-icons', 'lucide-react', '@radix-ui/react-icons'],
-    // Script loading optimization
     optimizeServerReact: true,
   },
   // Caching strategies
