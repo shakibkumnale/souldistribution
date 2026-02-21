@@ -11,5 +11,4 @@ Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
 
-# Crawl-delay for rate limiting
-Crawl-delay: 10 
+
