@@ -7,27 +7,25 @@ const RevenueDataSchema = new mongoose.Schema({
     ref: 'Release',
     index: true
   },
-  
+
   // Common identifier to link with releases
   isrc: {
     type: String,
     index: true
   },
-  
+
   // Payment/reporting details
   paymentDate: {
     type: Date,
     required: true
   },
   reportingPeriodStart: {
-    type: Date,
-    required: true
+    type: Date
   },
   reportingPeriodEnd: {
-    type: Date,
-    required: true
+    type: Date
   },
-  
+
   // Store details
   store: {
     type: String,
@@ -35,12 +33,15 @@ const RevenueDataSchema = new mongoose.Schema({
   },
   storeService: String,
   country: String,
-  
+
   // Track details
   album: String,
   upc: String,
   track: String,
-  
+
+  // Primary artist from CSV (for unmatched tracks)
+  primaryArtist: String,
+
   // Revenue & usage data
   quantity: {
     type: Number,
@@ -58,27 +59,35 @@ const RevenueDataSchema = new mongoose.Schema({
     type: Number,
     default: 100
   },
-  
+
+  // Deduplication hash
+  rowHash: {
+    type: String
+  },
+
   // Metadata
   reportFile: String,
   uploadDate: {
     type: Date,
     default: Date.now
   },
-  
-  // Utility fields
+
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// Creating compound indexes for common queries
+// Indexes for common queries
 RevenueDataSchema.index({ isrc: 1, paymentDate: 1 });
 RevenueDataSchema.index({ store: 1, country: 1 });
-RevenueDataSchema.index({ reportingPeriodStart: 1, reportingPeriodEnd: 1 });
+RevenueDataSchema.index({ country: 1 });
+RevenueDataSchema.index({ store: 1 });
+RevenueDataSchema.index({ paymentDate: 1 });
+RevenueDataSchema.index({ rowHash: 1 }, { unique: true, sparse: true });
+RevenueDataSchema.index({ releaseId: 1, store: 1 });
+RevenueDataSchema.index({ track: 1, netEarnings: -1 });
 
-// Check if the model already exists to prevent overwrite during hot reloading
 const RevenueData = mongoose.models.RevenueData || mongoose.model('RevenueData', RevenueDataSchema);
 
-export default RevenueData; 
+export default RevenueData;

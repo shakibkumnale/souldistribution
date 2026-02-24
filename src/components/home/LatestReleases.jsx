@@ -12,7 +12,7 @@ export default function LatestReleases({ releases = [] }) {
   const scrollRef = useRef(null);
   
   // Filter to only show featured releases if on homepage
-  const releasesToShow = releases.filter(release => release.featured);
+  const releasesToShow = releases
   
   const checkScroll = () => {
     if (scrollRef.current) {

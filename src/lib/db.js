@@ -59,11 +59,11 @@ export async function connectToDatabase() {
       if (mongoose.connection.readyState !== 0) {
         await mongoose.connection.close();
       }
-      
+
       // Connect to MongoDB
       const conn = await mongoose.connect(MONGODB_URI, options);
       console.log('MongoDB connected successfully');
-      
+
       // Handle connection errors
       mongoose.connection.on('error', (err) => {
         console.error('MongoDB connection error:', err);
@@ -71,19 +71,19 @@ export async function connectToDatabase() {
           reject(err);
         }
       });
-      
+
       // Handle disconnection
       mongoose.connection.on('disconnected', () => {
         console.warn('MongoDB disconnected, attempting to reconnect...');
         cached.conn = null;
         cached.promise = null;
       });
-      
+
       // Handle successful reconnection
       mongoose.connection.on('reconnected', () => {
         console.log('MongoDB reconnected successfully');
       });
-      
+
       resolve(conn);
     } catch (error) {
       console.error('MongoDB connection failed:', error.message);

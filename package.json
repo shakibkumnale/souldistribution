@@ -27,6 +27,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "framer-motion": "^12.5.0",
+    "ioredis": "^5.9.3",
     "jose": "^6.0.10",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.482.0",

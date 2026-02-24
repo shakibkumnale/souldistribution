@@ -6,16 +6,16 @@ export const fetchAnalytics = createAsyncThunk(
   async (artistId = '', { rejectWithValue }) => {
     try {
       // Build URL with potential artist filter and higher limit
-      const url = artistId 
-        ? `/api/analytics?artist=${artistId}&limit=100` 
+      const url = artistId
+        ? `/api/analytics?artist=${artistId}&limit=100`
         : '/api/analytics?limit=100';
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch analytics data');
       }
-      
+
       const data = await response.json();
       return data;
     } catch (error) {
@@ -59,12 +59,12 @@ const analyticsSlice = createSlice({
         state.analyticsData = action.payload.analytics || [];
         state.recentReports = action.payload.recentReports || [];
         state.currentArtist = action.payload.currentArtist || null;
-        
+
         // Only set artists list if we're not filtering
         if (action.payload.artists) {
           state.artists = action.payload.artists;
         }
-        
+
         state.isFiltering = false;
         state.lastFetched = Date.now();
       })

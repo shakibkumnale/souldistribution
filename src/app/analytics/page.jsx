@@ -37,17 +37,17 @@ function formatNumber(num) {
 
 export default function AnalyticsPage() {
   const dispatch = useDispatch();
-  const { 
-    analyticsData, 
-    recentReports, 
-    currentArtist, 
-    artists, 
-    loading, 
-    error, 
+  const {
+    analyticsData,
+    recentReports,
+    currentArtist,
+    artists,
+    loading,
+    error,
     isFiltering,
     lastFetched
   } = useSelector((state) => state.analytics);
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [artistFilter, setArtistFilterState] = useState('all');
 
@@ -55,7 +55,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     // Set a time threshold for re-fetching (e.g., 5 minutes = 300000 ms)
     const CACHE_TIME = 5 * 60 * 1000;
-    
+
     // Only fetch if we don't have data or if the cache is stale
     if (!lastFetched || Date.now() - lastFetched > CACHE_TIME) {
       dispatch(fetchAnalytics());
@@ -68,7 +68,7 @@ export default function AnalyticsPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const artistId = params.get('artist');
-      
+
       if (artistId) {
         setArtistFilterState(artistId);
         dispatch(fetchAnalytics(artistId));
@@ -82,7 +82,7 @@ export default function AnalyticsPage() {
     setArtistFilterState(value);
     dispatch(fetchAnalytics(value === 'all' ? '' : value));
     dispatch(setArtistFilter(value));
-    
+
     // Update URL with query parameter
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
@@ -99,7 +99,7 @@ export default function AnalyticsPage() {
     setArtistFilterState('all');
     dispatch(fetchAnalytics(''));
     dispatch(setArtistFilter('all'));
-    
+
     // Remove query parameter from URL
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
   // Calculate totals
   const totalStreams = analyticsData.reduce((total, item) => total + item.totalStreams, 0);
   const totalReleases = analyticsData.length;
-  
+
   // Prepare chart data for top releases
   const topReleasesChartData = analyticsData
     .slice(0, 10)
@@ -143,7 +143,7 @@ export default function AnalyticsPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-purple-400">Streaming Analytics</h1>
             <p className="text-gray-400">Track your music's performance across streaming platforms</p>
           </div>
-          
+
           <div className="flex items-center space-x-2 w-full sm:w-auto">
             <div className="w-full">
               <Select value={artistFilter} onValueChange={handleArtistChange}>
@@ -171,11 +171,11 @@ export default function AnalyticsPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             {artistFilter && artistFilter !== 'all' && (
-              <Button 
-                variant="outline" 
-                size="icon" 
+              <Button
+                variant="outline"
+                size="icon"
                 className="bg-gray-900 border-gray-700 hover:bg-gray-800 flex-shrink-0"
                 onClick={clearFilter}
                 disabled={isFiltering}
@@ -185,13 +185,13 @@ export default function AnalyticsPage() {
             )}
           </div>
         </div>
-        
+
         {currentArtist && (
           <div className="bg-purple-900/30 border border-purple-800 rounded-md px-4 py-3 mb-4 flex flex-col sm:flex-row sm:items-center">
             {currentArtist.image && (
-              <img 
-                src={currentArtist.image} 
-                alt={currentArtist.name} 
+              <img
+                src={currentArtist.image}
+                alt={currentArtist.name}
                 className="w-10 h-10 rounded-full mr-3 object-cover border border-purple-700 mb-2 sm:mb-0"
               />
             )}
@@ -210,7 +210,7 @@ export default function AnalyticsPage() {
           </div>
         )}
       </header>
-      
+
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
@@ -249,7 +249,7 @@ export default function AnalyticsPage() {
               </TabsTrigger>
             )}
           </TabsList>
-          
+
           <TabsContent value="overview" className="space-y-4">
             {/* Overview tab content */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -264,7 +264,7 @@ export default function AnalyticsPage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-gray-200">Releases</CardTitle>
@@ -276,7 +276,7 @@ export default function AnalyticsPage() {
                   </div>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-gray-200">Latest Report</CardTitle>
@@ -291,7 +291,7 @@ export default function AnalyticsPage() {
                 </CardContent>
               </Card>
             </div>
-            
+
             {/* Top Releases Chart */}
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
@@ -303,16 +303,16 @@ export default function AnalyticsPage() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={topReleasesChartData} margin={{ top: 20, right: 20, left: 0, bottom: 40 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                      <XAxis 
-                        dataKey="name" 
-                        stroke="#aaa" 
-                        angle={-45} 
-                        textAnchor="end" 
+                      <XAxis
+                        dataKey="name"
+                        stroke="#aaa"
+                        angle={-45}
+                        textAnchor="end"
                         tick={{ fontSize: 10 }}
                         height={50}
                       />
                       <YAxis stroke="#aaa" tickFormatter={formatNumber} />
-                      <Tooltip 
+                      <Tooltip
                         formatter={(value) => [formatNumber(value), 'Streams']}
                         contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #333' }}
                         labelStyle={{ color: '#ddd' }}
@@ -325,14 +325,14 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="releases" className="space-y-4">
             {/* Releases table content */}
             <Card className="bg-gray-900 border-gray-800">
               <CardHeader>
                 <CardTitle className="text-gray-200">All Releases</CardTitle>
                 <CardDescription className="text-gray-400">
-                  {currentArtist 
+                  {currentArtist
                     ? `All releases for ${currentArtist.name} with streaming data`
                     : 'All releases with streaming data'}
                 </CardDescription>
@@ -358,15 +358,15 @@ export default function AnalyticsPage() {
                               <td className="px-4 py-3">
                                 <div className="flex items-center">
                                   {item.coverImage && (
-                                    <img 
-                                      src={item.coverImage} 
-                                      alt={item.title} 
+                                    <img
+                                      src={item.coverImage}
+                                      alt={item.title}
                                       className="w-10 h-10 rounded mr-3 object-cover flex-shrink-0"
                                     />
                                   )}
                                   <div className="min-w-0">
-                                    <Link 
-                                      href={`/releases/${item.slug}`} 
+                                    <Link
+                                      href={`/releases/${item.slug}`}
                                       className="text-purple-400 hover:text-purple-300 font-medium block truncate"
                                     >
                                       {item.title}
@@ -381,7 +381,7 @@ export default function AnalyticsPage() {
                                 <div className="flex flex-wrap gap-1">
                                   {item.artists.map((artist, i) => (
                                     <span key={artist._id} className="inline-flex">
-                                      <Link 
+                                      <Link
                                         href={`/artists/${artist.slug}`}
                                         className="text-gray-300 hover:text-purple-300"
                                       >
@@ -410,22 +410,22 @@ export default function AnalyticsPage() {
                           ))}
                         </tbody>
                       </table>
-                      
+
                       {/* Card view for mobile */}
                       <div className="sm:hidden space-y-3">
                         {analyticsData.map((item) => (
                           <div key={item.releaseId} className="bg-gray-800/30 rounded-lg p-3 border border-gray-800">
                             <div className="flex items-center mb-2">
                               {item.coverImage && (
-                                <img 
-                                  src={item.coverImage} 
-                                  alt={item.title} 
+                                <img
+                                  src={item.coverImage}
+                                  alt={item.title}
                                   className="w-12 h-12 rounded mr-3 object-cover flex-shrink-0"
                                 />
                               )}
                               <div className="min-w-0 flex-1">
-                                <Link 
-                                  href={`/releases/${item.slug}`} 
+                                <Link
+                                  href={`/releases/${item.slug}`}
                                   className="text-purple-400 hover:text-purple-300 font-medium block truncate"
                                 >
                                   {item.title}
@@ -433,7 +433,7 @@ export default function AnalyticsPage() {
                                 <div className="flex flex-wrap gap-1 text-sm text-gray-300">
                                   {item.artists.map((artist, i) => (
                                     <span key={artist._id} className="inline-flex">
-                                      <Link 
+                                      <Link
                                         href={`/artists/${artist.slug}`}
                                         className="text-gray-300 hover:text-purple-300"
                                       >
@@ -470,16 +470,16 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           {currentArtist && (
             <TabsContent value="artist" className="space-y-4">
               {/* Artist-specific content */}
               <Card className="bg-gray-900 border-gray-800">
                 <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0">
                   {currentArtist.image && (
-                    <img 
-                      src={currentArtist.image} 
-                      alt={currentArtist.name} 
+                    <img
+                      src={currentArtist.image}
+                      alt={currentArtist.name}
                       className="w-16 h-16 rounded-full object-cover border border-purple-700"
                     />
                   )}
@@ -517,21 +517,21 @@ export default function AnalyticsPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     <div>
                       <h3 className="text-lg font-medium text-gray-300 mb-4">Top Releases</h3>
                       <div className="space-y-3">
                         {analyticsData.slice(0, 5).map(item => (
                           <div key={item.releaseId} className="flex items-center bg-gray-800 rounded-lg p-3">
                             {item.coverImage && (
-                              <img 
-                                src={item.coverImage} 
-                                alt={item.title} 
+                              <img
+                                src={item.coverImage}
+                                alt={item.title}
                                 className="w-12 h-12 rounded mr-3 object-cover flex-shrink-0"
                               />
                             )}
                             <div className="flex-1 min-w-0">
-                              <Link 
+                              <Link
                                 href={`/releases/${item.slug}`}
                                 className="text-purple-400 hover:text-purple-300 font-medium truncate block"
                               >
@@ -554,7 +554,7 @@ export default function AnalyticsPage() {
               </Card>
             </TabsContent>
           )}
-          
+
         </Tabs>
       )}
     </div>

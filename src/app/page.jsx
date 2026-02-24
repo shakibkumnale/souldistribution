@@ -85,18 +85,16 @@ async function getData() {
     const totalArtists = await Artist.countDocuments();
     
     // Get all featured artists sorted by Spotify followers
-    const popularArtists = await Artist.find({ featured: true })
-      .sort({ 'spotifyData.followers': -1 })
+    const popularArtists = await Artist.find({}).sort({ 'spotifyData.followers': -1 })
       .lean();
     
     // Get all latest releases without limit
-    const latestReleases = await Release.find({ featured: true })
-      .sort({ releaseDate: -1 })
+    const latestReleases = await Release.find({}).sort({ releaseDate: -1 })
       .populate('artists', 'name spotifyArtistId')
       .lean();
     
     // Get all top releases by popularity without limit
-    const topReleases = await Release.find({ featured: true })
+    const topReleases = await Release.find({})
       .sort({ popularity: -1 })
       .populate('artists', 'name spotifyArtistId')
       .lean();

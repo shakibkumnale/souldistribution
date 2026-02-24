@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, 
-  Legend, PieChart, Pie, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  Legend, PieChart, Pie, Cell
 } from 'recharts';
-import { 
-  DollarSign, Music, TrendingUp, AlertCircle, Loader2, 
+import {
+  DollarSign, Music, TrendingUp, AlertCircle, Loader2,
   ArrowLeft, Store, Globe, Share2
 } from 'lucide-react';
 import Link from 'next/link';
@@ -94,7 +94,7 @@ const useResponsiveRadius = () => {
 
     // Add event listener
     window.addEventListener('resize', handleResize);
-    
+
     // Cleanup
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -107,41 +107,41 @@ export default function TrackRevenuePage() {
   const params = useParams();
   const trackId = params.track;
   const pieRadius = useResponsiveRadius();
-  
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [trackData, setTrackData] = useState(null);
   const [revenueData, setRevenueData] = useState([]);
-  
+
   useEffect(() => {
     if (!trackId) {
       setError('Track ID is required');
       setLoading(false);
       return;
     }
-    
+
     const fetchTrackRevenueData = async () => {
       try {
         setLoading(true);
         setError('');
-        
+
         // Fetch track data
         const trackResponse = await fetch(`/api/tracks/${trackId}`);
         if (!trackResponse.ok) {
           throw new Error('Failed to fetch track data');
         }
         const track = await trackResponse.json();
-        
+
         // Fetch revenue data for this track
         const revenueResponse = await fetch(`/api/analytics/revenue?track=${trackId}`);
         if (!revenueResponse.ok) {
           throw new Error('Failed to fetch revenue data');
         }
         const data = await revenueResponse.json();
-        
+
         // Process and group revenue data
         const { groupedTrack, revenueEntries } = processRevenueData(track, data.revenue || []);
-        
+
         setTrackData(groupedTrack);
         setRevenueData(revenueEntries);
       } catch (err) {
@@ -151,10 +151,10 @@ export default function TrackRevenuePage() {
         setLoading(false);
       }
     };
-    
+
     fetchTrackRevenueData();
   }, [trackId]);
-  
+
   // Process and group revenue data
   const processRevenueData = (track, revenueEntries) => {
     // Create a grouped track object
@@ -172,14 +172,14 @@ export default function TrackRevenuePage() {
       countries: new Map(),
       latestPaymentDate: new Date(0)
     };
-    
+
     // Process all revenue entries
     revenueEntries.forEach(item => {
       // Add to totals
       groupedTrack.totalNetEarnings += item.netEarnings;
       groupedTrack.totalGrossEarnings += item.grossEarnings;
       groupedTrack.totalQuantity += item.quantity;
-      
+
       // Track by store
       if (!groupedTrack.stores.has(item.store)) {
         groupedTrack.stores.set(item.store, {
@@ -191,12 +191,12 @@ export default function TrackRevenuePage() {
           countries: new Map()
         });
       }
-      
+
       const storeData = groupedTrack.stores.get(item.store);
       storeData.totalNetEarnings += item.netEarnings;
       storeData.totalGrossEarnings += item.grossEarnings;
       storeData.totalQuantity += item.quantity;
-      
+
       // Track by country within store
       const countryKey = item.country || 'Unknown';
       if (!storeData.countries.has(countryKey)) {
@@ -208,13 +208,13 @@ export default function TrackRevenuePage() {
           entries: []
         });
       }
-      
+
       const countryData = storeData.countries.get(countryKey);
       countryData.totalNetEarnings += item.netEarnings;
       countryData.totalGrossEarnings += item.grossEarnings;
       countryData.totalQuantity += item.quantity;
       countryData.entries.push(item);
-      
+
       // Also track by country overall
       if (!groupedTrack.countries.has(countryKey)) {
         groupedTrack.countries.set(countryKey, {
@@ -224,22 +224,22 @@ export default function TrackRevenuePage() {
           totalQuantity: 0
         });
       }
-      
+
       const trackCountryData = groupedTrack.countries.get(countryKey);
       trackCountryData.totalNetEarnings += item.netEarnings;
       trackCountryData.totalGrossEarnings += item.grossEarnings;
       trackCountryData.totalQuantity += item.quantity;
-      
+
       // Update latest payment date
       const paymentDate = new Date(item.paymentDate);
       if (paymentDate > groupedTrack.latestPaymentDate) {
         groupedTrack.latestPaymentDate = paymentDate;
       }
     });
-    
+
     return { groupedTrack, revenueEntries };
   };
-  
+
   // Handle sharing the page
   const shareTrackRevenue = () => {
     if (navigator.share) {
@@ -254,7 +254,7 @@ export default function TrackRevenuePage() {
         .catch(console.error);
     }
   };
-  
+
   if (loading) {
     return (
       <div className="container mx-auto max-w-7xl p-4 md:p-6 bg-gray-950 text-gray-100 min-h-screen">
@@ -265,21 +265,21 @@ export default function TrackRevenuePage() {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="container mx-auto max-w-7xl p-4 md:p-6 bg-gray-950 text-gray-100 min-h-screen">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            className="text-gray-400 hover:text-white" 
+          <Button
+            variant="ghost"
+            className="text-gray-400 hover:text-white"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Revenue Analytics
           </Button>
         </div>
-        
+
         <Alert variant="destructive" className="mb-6 bg-red-900 border-red-700">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
@@ -287,21 +287,21 @@ export default function TrackRevenuePage() {
       </div>
     );
   }
-  
+
   if (!trackData) {
     return (
       <div className="container mx-auto max-w-7xl p-4 md:p-6 bg-gray-950 text-gray-100 min-h-screen">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            className="text-gray-400 hover:text-white" 
+          <Button
+            variant="ghost"
+            className="text-gray-400 hover:text-white"
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Revenue Analytics
           </Button>
         </div>
-        
+
         <div className="bg-gray-900 rounded-lg p-8 text-center">
           <AlertCircle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <h3 className="text-xl text-gray-400 mb-2">Track not found</h3>
@@ -312,44 +312,44 @@ export default function TrackRevenuePage() {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto max-w-7xl p-4 md:p-6 bg-gray-950 text-gray-100 min-h-screen">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <Button 
-          variant="ghost" 
-          className="text-gray-400 hover:text-white w-fit" 
+        <Button
+          variant="ghost"
+          className="text-gray-400 hover:text-white w-fit"
           onClick={() => router.back()}
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to Revenue Analytics
         </Button>
-        
-        <Button 
-          variant="outline" 
-          className="w-fit bg-gray-900 border-gray-700" 
+
+        <Button
+          variant="outline"
+          className="w-fit bg-gray-900 border-gray-700"
           onClick={shareTrackRevenue}
         >
           <Share2 className="h-4 w-4 mr-2" />
           Share
         </Button>
       </div>
-      
+
       <div className="bg-gray-900/50 rounded-lg p-4 md:p-6 mb-6 flex flex-col md:flex-row items-start md:items-center gap-4">
         {trackData.coverImage && (
-          <img 
-            src={trackData.coverImage} 
-            alt={trackData.title} 
+          <img
+            src={trackData.coverImage}
+            alt={trackData.title}
             className="w-24 h-24 rounded object-cover border border-gray-800"
           />
         )}
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-white">{trackData.title}</h1>
-          
+
           <div className="flex flex-wrap gap-1 mt-1 text-gray-300">
             {trackData.artists.map((artist, i) => (
               <span key={artist._id}>
-                <Link 
+                <Link
                   href={`/artists/${artist.slug}`}
                   className="hover:text-purple-400 transition-colors"
                 >
@@ -359,7 +359,7 @@ export default function TrackRevenuePage() {
               </span>
             ))}
           </div>
-          
+
           <div className="text-sm text-gray-400 mt-2">
             {trackData.isrc && (
               <div>ISRC: {trackData.isrc}</div>
@@ -368,7 +368,7 @@ export default function TrackRevenuePage() {
           </div>
         </div>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader className="pb-3">
@@ -383,7 +383,7 @@ export default function TrackRevenuePage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader className="pb-3">
             <CardTitle className="text-gray-200">Total Streams</CardTitle>
@@ -397,7 +397,7 @@ export default function TrackRevenuePage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader className="pb-3">
             <CardTitle className="text-gray-200">Avg. Per Stream</CardTitle>
@@ -406,15 +406,15 @@ export default function TrackRevenuePage() {
             <div className="flex items-center">
               <TrendingUp className="w-6 h-6 mr-3 text-purple-400" />
               <span className="text-3xl font-bold text-purple-400">
-                {trackData.totalQuantity > 0 
-                  ? formatCurrency(trackData.totalNetEarnings / trackData.totalQuantity) 
+                {trackData.totalQuantity > 0
+                  ? formatCurrency(trackData.totalNetEarnings / trackData.totalQuantity)
                   : '$0.00'}
               </span>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Revenue by Store */}
         <Card className="bg-gray-900 border-gray-800">
@@ -449,9 +449,9 @@ export default function TrackRevenuePage() {
                       ))}
                     </Pie>
                     <Tooltip content={<CustomPieTooltip />} />
-                    <Legend 
+                    <Legend
                       layout={window.innerWidth < 768 ? 'horizontal' : 'vertical'}
-                      align={window.innerWidth < 768 ? 'center' : 'right'} 
+                      align={window.innerWidth < 768 ? 'center' : 'right'}
                       verticalAlign={window.innerWidth < 768 ? 'bottom' : 'middle'}
                       wrapperStyle={window.innerWidth < 768 ? { paddingTop: '20px' } : { paddingLeft: 20 }}
                     />
@@ -465,7 +465,7 @@ export default function TrackRevenuePage() {
             </div>
           </CardContent>
         </Card>
-        
+
         {/* Revenue by Country */}
         <Card className="bg-gray-900 border-gray-800">
           <CardHeader>
@@ -499,9 +499,9 @@ export default function TrackRevenuePage() {
                       ))}
                     </Pie>
                     <Tooltip content={<CustomPieTooltip />} />
-                    <Legend 
+                    <Legend
                       layout={window.innerWidth < 768 ? 'horizontal' : 'vertical'}
-                      align={window.innerWidth < 768 ? 'center' : 'right'} 
+                      align={window.innerWidth < 768 ? 'center' : 'right'}
                       verticalAlign={window.innerWidth < 768 ? 'bottom' : 'middle'}
                       wrapperStyle={window.innerWidth < 768 ? { paddingTop: '20px' } : { paddingLeft: 20 }}
                     />
@@ -516,9 +516,9 @@ export default function TrackRevenuePage() {
           </CardContent>
         </Card>
       </div>
-      
+
       <h2 className="text-xl font-bold text-white mb-4">Detailed Revenue Breakdown</h2>
-      
+
       <div className="space-y-4">
         {/* Store sections */}
         {Array.from(trackData.stores || []).map(([storeKey, store], storeIndex) => (
@@ -544,7 +544,7 @@ export default function TrackRevenuePage() {
                 </div>
               </div>
             </div>
-            
+
             {/* Countries within store */}
             <div className="divide-y divide-gray-700">
               {Array.from(store.countries || []).map(([countryKey, country], countryIndex) => (
@@ -565,7 +565,7 @@ export default function TrackRevenuePage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Individual entries */}
                   <div className="mt-3 pt-2 border-t border-gray-800 grid grid-cols-1 md:grid-cols-3 gap-4">
                     {country.entries.map((entry, entryIndex) => (

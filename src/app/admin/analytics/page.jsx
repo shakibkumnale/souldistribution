@@ -2,205 +2,140 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Upload, AlertCircle, BarChart3 } from 'lucide-react';
+import { Loader2, Upload, AlertCircle, BarChart3, CheckCircle2, SkipForward, XCircle, FileText, Database } from 'lucide-react';
 import Link from 'next/link';
 
-export default function AnalyticsPage() {
+function UploadCard({ title, description, accept, endpoint, icon: Icon, iconColor }) {
   const [file, setFile] = useState(null);
-  const [reportDate, setReportDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [uploadResult, setUploadResult] = useState(null);
+  const [result, setResult] = useState(null);
   const { toast } = useToast();
+  const inputId = `file-${endpoint.replace(/\//g, '-')}`;
 
-  const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile && selectedFile.name.endsWith('.csv')) {
-      setFile(selectedFile);
-      setError('');
-    } else {
-      setFile(null);
-      setError('Please select a valid CSV file');
-    }
+  const handleFile = (f) => {
+    const isValid = accept.split(',').some(ext => f?.name?.endsWith(ext.trim()));
+    if (f && isValid) { setFile(f); setError(''); }
+    else { setFile(null); setError(`Please select a valid file (${accept})`); }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!file) {
-      setError('Please select a CSV file');
-      return;
-    }
-
-    if (!reportDate) {
-      setError('Please select a report date');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-    setUploadResult(null);
-
+    if (!file) { setError('Please select a file'); return; }
+    setIsLoading(true); setError(''); setResult(null);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('reportDate', reportDate);
-
-      const response = await fetch('/api/analytics/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to upload file');
-      }
-
-      setUploadResult(data);
-      
-      toast({
-        title: 'Upload Successful',
-        description: `Processed ${data.recordsProcessed} out of ${data.totalRecords} records`,
-        duration: 5000,
-      });
-      
-      // Reset form
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch(endpoint, { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || data.message || 'Upload failed');
+      setResult(data);
+      toast({ title: 'Success', description: `${data.inserted} inserted, ${data.skipped} skipped` });
       setFile(null);
-      const fileInput = document.getElementById('file-upload');
-      if (fileInput) fileInput.value = '';
-      
+      const inp = document.getElementById(inputId);
+      if (inp) inp.value = '';
     } catch (err) {
-      console.error('Error uploading file:', err);
-      setError(err.message || 'An error occurred during upload');
-      
-      toast({
-        title: 'Upload Failed',
-        description: err.message || 'Failed to upload and process file',
-        variant: 'destructive',
-        duration: 5000,
-      });
+      setError(err.message);
+      toast({ title: 'Failed', description: err.message, variant: 'destructive' });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
+    <Card className="dark:bg-gray-900">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Icon className={`h-5 w-5 ${iconColor}`} />
+          {title}
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <Alert variant="destructive"><AlertCircle className="h-4 w-4" /><AlertDescription>{error}</AlertDescription></Alert>}
+
+          <div
+            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragging ? 'border-purple-500 bg-purple-900/20' : 'border-gray-700 hover:border-purple-600'}`}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => { e.preventDefault(); setIsDragging(false); handleFile(e.dataTransfer.files[0]); }}
+            onClick={() => document.getElementById(inputId).click()}
+          >
+            <input id={inputId} type="file" accept={accept} className="hidden" onChange={(e) => handleFile(e.target.files[0])} />
+            {file ? (
+              <div className="flex flex-col items-center gap-1">
+                <FileText className="h-8 w-8 text-purple-400" />
+                <p className="font-medium text-gray-200 text-sm">{file.name}</p>
+                <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-1">
+                <Upload className="h-8 w-8 text-gray-500" />
+                <p className="text-sm text-gray-400">Drop {accept} file or <span className="text-purple-400">browse</span></p>
+              </div>
+            )}
+          </div>
+
+          <Button type="submit" className="w-full bg-purple-600 hover:bg-purple-700" disabled={isLoading || !file}>
+            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Processing...</> : <><Upload className="mr-2 h-4 w-4" />Upload</>}
+          </Button>
+
+          {result && (
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { icon: CheckCircle2, value: result.inserted, label: 'Inserted', color: 'green' },
+                { icon: SkipForward, value: result.skipped, label: 'Skipped', color: 'yellow' },
+                { icon: XCircle, value: result.failed ?? 0, label: 'Failed', color: 'gray' },
+              ].map(({ icon: I, value, label, color }) => (
+                <div key={label} className={`flex flex-col items-center p-2 rounded-lg bg-${color}-900/30 border border-${color}-800`}>
+                  <I className={`h-4 w-4 text-${color}-500 mb-1`} />
+                  <span className={`text-xl font-bold text-${color}-400`}>{value}</span>
+                  <span className={`text-xs text-${color}-500`}>{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Analytics & Streaming</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Analytics & Reporting</h1>
+        <Link href="/analytics/revenue">
+          <Button variant="outline" size="sm" className="border-gray-700 text-gray-300 hover:border-purple-600">
+            <BarChart3 className="h-4 w-4 mr-2" /> View Dashboard
+          </Button>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="dark:bg-gray-900 hover:shadow-lg transition-shadow">
-          <Link href="/admin/revenue" className="block h-full">
-            <CardHeader className="p-6">
-              <CardTitle className="flex items-center space-x-2">
-                <BarChart3 className="h-5 w-5 text-green-500" /> 
-                <span>Revenue Analytics</span>
-              </CardTitle>
-              <CardDescription>
-                View detailed revenue reports by artist, track, and platform
-              </CardDescription>
-            </CardHeader>
-          </Link>
-        </Card>
-
-        <Card className="dark:bg-gray-900 md:col-span-2">
-          <CardHeader>
-            <CardTitle>Upload LANDR Stream Report</CardTitle>
-            <CardDescription>
-              Upload the CSV export from LANDR to update streaming statistics
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="reportDate">Report Date</Label>
-                <Input
-                  id="reportDate"
-                  type="date"
-                  value={reportDate}
-                  onChange={(e) => setReportDate(e.target.value)}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="file-upload">LANDR CSV Report</Label>
-                <div className="border border-gray-300 dark:border-gray-700 rounded-md p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    accept=".csv"
-                    onChange={handleFileChange}
-                    required
-                    className="hidden"
-                  />
-                  <label htmlFor="file-upload" className="cursor-pointer flex items-center justify-center space-x-2">
-                    <Upload className="h-6 w-6 text-gray-500" />
-                    <span>
-                      {file ? file.name : 'Choose or drop file...'}
-                    </span>
-                  </label>
-                </div>
-                <p className="text-sm text-gray-500 mt-1">
-                  Upload the LANDR analytics CSV export
-                </p>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-purple-600 hover:bg-purple-700"
-                disabled={isLoading || !file}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Upload and Process'
-                )}
-              </Button>
-
-              {uploadResult && (
-                <Alert className="bg-green-100 dark:bg-green-900 border-green-400 text-green-800 dark:text-green-100 mt-4">
-                  <AlertDescription>
-                    Successfully processed {uploadResult.recordsProcessed} out of {uploadResult.totalRecords} records.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </form>
-          </CardContent>
-        </Card>
-
-        <Card className="dark:bg-gray-900">
-          <CardHeader>
-            <CardTitle>Recent Reports</CardTitle>
-            <CardDescription>
-              View recently uploaded streaming reports
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-gray-500">
-              <p>Upload your first report to see it here</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <UploadCard
+          title="Upload LANDR CSV Report"
+          description="Upload the monthly Royalties Detailed Report CSV from LANDR. Duplicates are automatically skipped."
+          accept=".csv"
+          endpoint="/api/analytics/revenue/upload"
+          icon={Upload}
+          iconColor="text-purple-500"
+        />
+        <UploadCard
+          title="Import MongoDB JSON Dump"
+          description="Import a MongoDB JSON export (soul_clone.revenuedatas.json). Existing documents are skipped by _id."
+          accept=".json"
+          endpoint="/api/analytics/revenue/import"
+          icon={Database}
+          iconColor="text-blue-500"
+        />
       </div>
     </div>
   );
-} 
+}

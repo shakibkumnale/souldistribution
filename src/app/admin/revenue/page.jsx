@@ -54,24 +54,24 @@ export default function AdminRevenueReportsPage() {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('upload');
-  
+
   // For a simple search filter on the reports list
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Load reports on initial page load
   useEffect(() => {
     fetchReports();
   }, []);
-  
+
   const fetchReports = async () => {
     try {
       setIsLoading(true);
       const response = await fetch('/api/admin/revenue/reports');
-      
+
       if (!response.ok) {
         throw new Error('Failed to load reports');
       }
-      
+
       const data = await response.json();
       setReports(data.reports || []);
     } catch (err) {
@@ -81,16 +81,16 @@ export default function AdminRevenueReportsPage() {
       setIsLoading(false);
     }
   };
-  
+
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    
+
     if (!selectedFile) {
       setFile(null);
       setFilename('');
       return;
     }
-    
+
     // Check if file is CSV
     if (!selectedFile.name.endsWith('.csv')) {
       setError('Please upload a CSV file');
@@ -98,49 +98,49 @@ export default function AdminRevenueReportsPage() {
       setFilename('');
       return;
     }
-    
+
     setFile(selectedFile);
     setFilename(selectedFile.name);
     setError('');
   };
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!file) {
       setError('Please select a file to upload');
       return;
     }
-    
+
     setIsUploading(true);
     setError('');
     setSuccess('');
-    
+
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const response = await fetch('/api/analytics/revenue/upload', {
         method: 'POST',
         body: formData,
       });
-      
+
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.error || 'Failed to upload file');
       }
-      
+
       // Clear the file input
       setFile(null);
       setFilename('');
-      
+
       // Show success message
       setSuccess(`Successfully processed ${data.count} revenue entries from ${filename}`);
-      
+
       // Refresh reports list
       fetchReports();
-      
+
       // Switch to the manage tab to see the newly uploaded report
       setActiveTab('manage');
     } catch (err) {
@@ -150,23 +150,23 @@ export default function AdminRevenueReportsPage() {
       setIsUploading(false);
     }
   };
-  
+
   const handleDeleteReport = async (reportId) => {
     if (!confirm('Are you sure you want to delete this report and all its data?')) {
       return;
     }
-    
+
     try {
       setIsLoading(true);
-      
+
       const response = await fetch(`/api/admin/revenue/reports/${reportId}`, {
         method: 'DELETE',
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete report');
       }
-      
+
       // Refresh the reports list
       fetchReports();
       setSuccess('Report deleted successfully');
@@ -177,39 +177,39 @@ export default function AdminRevenueReportsPage() {
       setIsLoading(false);
     }
   };
-  
+
   // Filter reports based on search term
-  const filteredReports = reports.filter(report => 
+  const filteredReports = reports.filter(report =>
     report.filename.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  
+
   return (
     <div className="container mx-auto p-4 md:p-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold mb-2">Revenue Reports</h1>
         <p className="text-gray-500">Upload and manage LANDR royalty reports</p>
       </div>
-      
+
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      
+
       {success && (
         <Alert className="mb-6 bg-green-50 border-green-200 text-green-800">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
-      
+
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="upload">Upload Report</TabsTrigger>
           <TabsTrigger value="manage">Manage Reports</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="upload">
           <Card>
             <CardHeader>
@@ -260,7 +260,7 @@ export default function AdminRevenueReportsPage() {
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Button
                     type="submit"
@@ -276,12 +276,12 @@ export default function AdminRevenueReportsPage() {
                       'Upload Revenue Report'
                     )}
                   </Button>
-                  
+
                   <div className="text-xs text-gray-500 mt-2">
                     <p>Expected CSV format from LANDR royalty reports with columns including:</p>
                     <p className="mt-1">
-                      Payment Date, Start of reporting period, End of reporting period, Store, Store service, 
-                      Country of sale or stream, Album, UPC, Track, ISRC, Primary artist(s), 
+                      Payment Date, Start of reporting period, End of reporting period, Store, Store service,
+                      Country of sale or stream, Album, UPC, Track, ISRC, Primary artist(s),
                       Quantity of sales or streams, Gross earnings (USD), Net earnings (USD), Share %
                     </p>
                   </div>
@@ -290,7 +290,7 @@ export default function AdminRevenueReportsPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="manage">
           <Card>
             <CardHeader>
@@ -311,7 +311,7 @@ export default function AdminRevenueReportsPage() {
                   />
                 </div>
               </div>
-              
+
               {isLoading ? (
                 <div className="flex items-center justify-center h-32">
                   <Loader2 className="w-6 h-6 text-purple-600 animate-spin" />
@@ -353,8 +353,8 @@ export default function AdminRevenueReportsPage() {
                                 <Download className="h-4 w-4 mr-1" />
                                 Export
                               </Button>
-                              <Button 
-                                variant="destructive" 
+                              <Button
+                                variant="destructive"
                                 size="sm"
                                 onClick={() => handleDeleteReport(report._id)}
                               >
@@ -368,12 +368,12 @@ export default function AdminRevenueReportsPage() {
                   </table>
                 </div>
               )}
-              
+
               <div className="mt-4 flex justify-end">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={fetchReports} 
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchReports}
                   disabled={isLoading}
                 >
                   {isLoading ? (

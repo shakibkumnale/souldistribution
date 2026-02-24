@@ -13,20 +13,20 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
   const [selectedType, setSelectedType] = useState('');
   const [sortOption, setSortOption] = useState('newest');
   const [featuredOnly, setFeaturedOnly] = useState(false);
-  
+
   // Helper function to safely get artist name
   const getArtistName = (release) => {
     // First try to get from artist object in the array
     if (release.artists && release.artists.length > 0) {
       const artist = release.artists[0];
-      
+
       // Handle different artist formats
       if (typeof artist === 'object') {
         // If it's a populated artist object with name
         if (artist.name) {
           return artist.name;
         }
-        
+
         // If it's an ObjectId reference
         if (artist.$oid || artist._id) {
           // Use artistName as fallback when we only have an ID reference
@@ -36,15 +36,15 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
         }
       }
     }
-    
+
     // Fall back to artistName field if it exists
     if (release.artistName) {
       return release.artistName;
     }
-    
+
     return 'Unknown Artist';
   };
-  
+
   // Extract unique artists for filter dropdown
   const uniqueArtists = Array.from(new Set(
     releases
@@ -56,27 +56,27 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
   const uniqueTypes = Array.from(new Set(
     releases.map(release => release.type || 'Single')
   )).sort();
-  
+
   // Apply filtering and sorting whenever dependencies change
   useEffect(() => {
     let result = [...releases];
-    
+
     // Apply filtering
     if (searchTerm) {
-      result = result.filter(release => 
+      result = result.filter(release =>
         release.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getArtistName(release).toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    
+
     if (selectedArtist) {
-      result = result.filter(release => 
+      result = result.filter(release =>
         getArtistName(release) === selectedArtist
       );
     }
-    
+
     if (selectedType) {
-      result = result.filter(release => 
+      result = result.filter(release =>
         release.type === selectedType
       );
     }
@@ -84,7 +84,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
     if (featuredOnly) {
       result = result.filter(release => release.featured);
     }
-    
+
     // Apply sorting
     switch (sortOption) {
       case 'newest':
@@ -105,10 +105,10 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
       default:
         break;
     }
-    
+
     setFilteredReleases(result);
   }, [releases, searchTerm, selectedArtist, selectedType, sortOption, featuredOnly]);
-  
+
   // If no releases provided, show placeholder
   if (!releases || releases.length === 0) {
     return (
@@ -161,7 +161,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                       onChange={e => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="filter-artist" className="block text-sm font-medium text-gray-300 mb-1">
                       Filter by Artist
@@ -180,7 +180,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                       ))}
                     </select>
                   </div>
-                  
+
                   <div>
                     <label htmlFor="filter-type" className="block text-sm font-medium text-gray-300 mb-1">
                       Filter by Type
@@ -200,7 +200,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                     </select>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center">
                   <input
                     id="featured-only-releases"
@@ -215,7 +215,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                 </div>
               </>
             )}
-            
+
             {enableSorting && (
               <div className="md:w-64">
                 <label htmlFor="sort-releases" className="block text-sm font-medium text-gray-300 mb-1">
@@ -238,11 +238,11 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
           </div>
         </div>
       )}
-      
+
       <div className={isScrollingMode ? className : `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 ${className}`}>
         {filteredReleases.length > 0 ? (
           filteredReleases.map((release, index) => (
-            <div 
+            <div
               key={getReleaseKey(release, index)}
               className={`group relative rounded-xl overflow-hidden bg-gradient-card transition-all duration-300 shadow-md hover:shadow-glow-accent 
                 ${isScrollingMode ? 'min-w-[160px] sm:min-w-[200px] md:min-w-[240px] flex-shrink-0' : ''}`}
@@ -255,24 +255,23 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                   src={release.coverImage || '/images/placeholder-cover.jpg'}
                   alt={release.title || 'Release Cover'}
                   fill
-                  sizes={isScrollingMode ? 
-                    "(max-width: 640px) 160px, (max-width: 768px) 200px, 240px" : 
+                  sizes={isScrollingMode ?
+                    "(max-width: 640px) 160px, (max-width: 768px) 200px, 240px" :
                     "(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   }
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
-                
+
                 {/* Hover overlay with play button */}
-                <div 
-                  className={`absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity duration-300 ${
-                    hoveredIndex === index ? 'opacity-100' : 'opacity-0'
-                  }`}
+                <div
+                  className={`absolute inset-0 bg-black/60 flex items-center justify-center transition-opacity duration-300 ${hoveredIndex === index ? 'opacity-100' : 'opacity-0'
+                    }`}
                 >
                   <div className="flex flex-col sm:flex-row gap-2">
                     {release.spotifyUrl && (
-                      <Link 
-                        href={`https://open.spotify.com/track/${release.spotifyUrl}`} 
-                        target="_blank" 
+                      <Link
+                        href={`https://open.spotify.com/track/${release.spotifyTrackId}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center justify-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-green-600 text-white text-xs sm:text-sm font-medium hover:bg-green-500 transition-colors"
                       >
@@ -280,7 +279,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                         <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Link>
                     )}
-                    <Link 
+                    <Link
                       href={`/releases/${release.slug}`}
                       className="flex items-center justify-center gap-1 px-2 sm:px-4 py-1 sm:py-2 rounded-full bg-purple-600 text-white text-xs sm:text-sm font-medium hover:bg-purple-500 transition-colors"
                     >
@@ -290,7 +289,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                   </div>
                 </div>
               </div>
-              
+
               {/* Release info */}
               <div className="p-3 sm:p-4">
                 <h3 className="font-semibold text-white text-sm sm:text-lg truncate group-hover:text-pink-primary transition-colors">
@@ -303,11 +302,7 @@ export default function ReleasesGrid({ releases = [], className = '', enableFilt
                   <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-purple-900/50 text-purple-300">
                     {release.type || 'Single'}
                   </span>
-                  {release.featured && (
-                    <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-pink-900/50 text-pink-300">
-                      Featured
-                    </span>
-                  )}
+
                 </div>
               </div>
             </div>
