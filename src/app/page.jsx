@@ -407,19 +407,19 @@ export default async function HomePage() {
       </section>
       
       {/* Analytics CTA Section */}
-      <section className="w-full py-16 sm:py-20 bg-[#141419] relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-950/40 via-[#141419] to-[#141419]"></div>
+      <section className="w-full py-16 sm:py-20 bg-gradient-to-b from-gray-900 via-purple-900/20 to-gray-900 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/30 via-transparent to-transparent opacity-60 pointer-events-none"></div>
         <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
         <div className="relative z-10 px-4 md:px-8 max-w-7xl mx-auto">
-          <div className="bg-gradient-to-r from-gray-900/80 via-emerald-950/30 to-gray-900/80 rounded-xl sm:rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 border border-emerald-800/30 shadow-xl backdrop-blur-sm">
+          <div className="bg-gradient-to-r from-gray-900 via-purple-950/10 to-gray-900 rounded-xl sm:rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 shadow-glow-primary border border-gray-800/50">
             <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-              {/* Left: Icon & Title */}
+              {/* Left: Icon & Badge */}
               <div className="flex-shrink-0 text-center md:text-left">
-                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/30 mb-4">
-                  <BarChart className="h-10 w-10 text-emerald-400" />
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-700/30 to-pink-700/20 border border-purple-600/30 mb-4 shadow-glow-primary">
+                  <BarChart className="h-10 w-10 text-purple-400" />
                 </div>
                 <div className="inline-flex md:block">
-                  <span className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
+                  <span className="bg-purple-500/10 border border-purple-500/30 text-purple-300 text-xs font-semibold px-3 py-1 rounded-full">
                     LIVE DASHBOARD
                   </span>
                 </div>
@@ -429,7 +429,7 @@ export default async function HomePage() {
               <div className="flex-1 text-center md:text-left">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
                   <span className="text-white">Track Your </span>
-                  <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Streams &amp; Revenue</span>
+                  <span className="text-gradient">Streams &amp; Revenue</span>
                 </h2>
                 <p className="text-sm sm:text-base md:text-lg text-gray-300 mb-2">
                   Get real-time insights into your music performance across all platforms. Monitor streams, listener demographics, and earnings in one place.
@@ -443,7 +443,7 @@ export default async function HomePage() {
               <div className="flex-shrink-0 flex flex-col gap-3 w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="text-sm sm:text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-0 shadow-lg shadow-emerald-900/40 w-full sm:w-auto"
+                  className="text-sm sm:text-base bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 border-0 shadow-lg shadow-purple-900/50 w-full sm:w-auto"
                   asChild
                 >
                   <Link href="/analytics/revenue" id="analytics-revenue-btn">
@@ -454,7 +454,7 @@ export default async function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="text-sm sm:text-base border-emerald-600/50 text-emerald-300 hover:bg-emerald-900/30 hover:border-emerald-500 w-full sm:w-auto"
+                  className="text-sm sm:text-base border-purple-500/50 text-purple-300 hover:bg-purple-900/30 hover:border-purple-400 w-full sm:w-auto"
                   asChild
                 >
                   <Link href="/analytics" id="analytics-streams-btn">
@@ -466,15 +466,15 @@ export default async function HomePage() {
             </div>
 
             {/* Mini stats row */}
-            <div className="mt-8 pt-6 border-t border-emerald-800/20 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="mt-8 pt-6 border-t border-gray-800/60 grid grid-cols-2 sm:grid-cols-4 gap-4">
               {[
-                { label: 'Platforms Tracked', value: '150+', icon: <Globe className="h-4 w-4 text-emerald-400" /> },
-                { label: 'Revenue Reports', value: 'Monthly', icon: <DollarSign className="h-4 w-4 text-teal-400" /> },
-                { label: 'Stream Insights', value: 'Real-Time', icon: <TrendingUp className="h-4 w-4 text-green-400" /> },
-                { label: 'Countries', value: '195+', icon: <BarChart className="h-4 w-4 text-emerald-400" /> },
+                { label: 'Platforms Tracked', value: '150+', icon: <Globe className="h-4 w-4 text-purple-400" /> },
+                { label: 'Revenue Reports', value: 'Monthly', icon: <DollarSign className="h-4 w-4 text-pink-400" /> },
+                { label: 'Stream Insights', value: 'Real-Time', icon: <TrendingUp className="h-4 w-4 text-purple-300" /> },
+                { label: 'Countries', value: '195+', icon: <BarChart className="h-4 w-4 text-pink-300" /> },
               ].map((stat) => (
-                <div key={stat.label} className="flex items-center gap-3 bg-black/20 rounded-lg p-3">
-                  <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-900/30">{stat.icon}</div>
+                <div key={stat.label} className="flex items-center gap-3 bg-black/30 rounded-lg p-3 border border-gray-800/40">
+                  <div className="flex-shrink-0 p-1.5 rounded-lg bg-purple-900/40">{stat.icon}</div>
                   <div>
                     <div className="text-lg font-bold text-white">{stat.value}</div>
                     <div className="text-xs text-gray-400">{stat.label}</div>
