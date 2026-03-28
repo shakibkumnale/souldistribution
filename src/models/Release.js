@@ -7,6 +7,10 @@ const ReleaseSchema = new mongoose.Schema({
     required: [true, 'Please provide the release title'],
     trim: true,
   },
+  description: {
+    type: String,
+    trim: true,
+  },
   slug: {
     type: String,
     required: [true, 'Please provide a slug'],

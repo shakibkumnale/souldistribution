@@ -659,6 +659,18 @@ export default function ReleaseForm({ initialData, artists, onSubmit, spotifyDat
             </div>
           )}
         </div>
+
+        <div>
+          <Label htmlFor="description">Description <span className="text-gray-400 font-normal">(optional)</span></Label>
+          <Textarea
+            id="description"
+            name="description"
+            value={formData.description || ''}
+            onChange={handleChange}
+            className="mt-1 min-h-[100px]"
+            placeholder="Enter a short description for this release..."
+          />
+        </div>
       </div>
       
       {/* Artists */}

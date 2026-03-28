@@ -97,6 +97,12 @@ export default function ReleaseDetails({ release, moreReleases = [] }) {
                   {formatDate(release.releaseDate)}
                 </div>
               </div>
+
+              {release.description && (
+                <p className="text-sm text-gray-400 leading-relaxed mt-2">
+                  {release.description}
+                </p>
+              )}
               
               <div className="flex flex-wrap gap-3">
                 {release.type && (
