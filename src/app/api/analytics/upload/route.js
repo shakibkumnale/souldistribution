@@ -13,89 +13,93 @@ export const config = {
 };
 
 /**
+ * Extract a Date from the filename (e.g. LANDR_TrendsBreakdown_20260221104312.csv)
+ * Pattern: YYYYMMDD at any position of 14-digit timestamp
+ */
+function extractDateFromFilename(filename) {
+  // Try to match YYYYMMDD (first 8 digits of a 14-digit timestamp block)
+  const match = filename.match(/(\d{8})\d{6}/);
+  if (match) {
+    const raw = match[1]; // e.g. "20260221"
+    const year = parseInt(raw.slice(0, 4), 10);
+    const month = parseInt(raw.slice(4, 6), 10) - 1; // 0-indexed
+    const day = parseInt(raw.slice(6, 8), 10);
+    const d = new Date(Date.UTC(year, month, day));
+    if (!isNaN(d.getTime())) return d;
+  }
+  return new Date(); // fallback: today
+}
+
+/**
  * POST /api/analytics/upload
- * Upload and process LANDR streaming data
+ * Upload and process a LANDR Trends Breakdown CSV → StreamData collection
+ * Body (multipart): file (.csv), optional reportDate (YYYY-MM-DD)
  */
 export async function POST(request) {
   try {
     await connectToDatabase();
-    
-    // Extract data from the request
+
     const data = await request.formData();
     const file = data.get('file');
-    const reportDate = data.get('reportDate');
-    
-    if (!file || !reportDate) {
+
+    if (!file) {
       return NextResponse.json(
-        { error: 'Missing required fields (file or reportDate)' },
+        { error: 'No file provided' },
         { status: 400 }
       );
     }
 
-    // Read file content
+    // Determine report date: use provided value or extract from filename
+    const reportDateRaw = data.get('reportDate');
+    let date;
+    if (reportDateRaw) {
+      date = new Date(reportDateRaw);
+      if (isNaN(date.getTime())) date = extractDateFromFilename(file.name);
+    } else {
+      date = extractDateFromFilename(file.name);
+    }
+
+    // Read and parse CSV
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     const fileContent = fileBuffer.toString();
-    
-    // Parse CSV
     const records = parse(fileContent, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
     });
 
-    // Get all releases with landrTrackId set
-    const releases = await Release.find({ 
-      landrTrackId: { $exists: true, $ne: '' } 
+    // Load all releases that have a landrTrackId
+    const releases = await Release.find({
+      landrTrackId: { $exists: true, $ne: '' },
     }).lean();
 
-    console.log(`Found ${releases.length} releases with landrTrackId`);
-    
-    // Debug the first few to verify data
-    if (releases.length > 0) {
-      releases.slice(0, 3).forEach(release => {
-        console.log(`Release "${release.title}" has landrTrackId: ${release.landrTrackId}`);
-      });
-    }
-
-    // Create a map of landrTrackId to release
     const releaseMap = {};
-    releases.forEach(release => {
-      if (release.landrTrackId) {
-        releaseMap[release.landrTrackId] = release;
-      }
+    releases.forEach((r) => {
+      if (r.landrTrackId) releaseMap[r.landrTrackId] = r;
     });
 
-    console.log(`Created releaseMap with ${Object.keys(releaseMap).length} entries`);
-
-    // Log some of the IDs from the LANDR file to debug matching
-    if (records.length > 0) {
-      console.log("First few LANDR track IDs from CSV:");
-      records.slice(0, 5).forEach(record => {
-        const landrId = record.Id?.trim();
-        const name = record.Name;
-        const matchedRelease = releaseMap[landrId];
-        console.log(`ID: ${landrId}, Name: ${name}, Matched: ${matchedRelease ? 'YES' : 'NO'}`);
-      });
-    }
-
-    // Records to save
-    const streamDataRecords = [];
-    const date = new Date(reportDate);
     const reportFileName = file.name;
 
-    // Process each record from the CSV
+    // Find existing records for same date to support dedup
+    const existingTrackIds = new Set();
+    const existingDocs = await StreamData.find({ date }).select('landrTrackId').lean();
+    existingDocs.forEach((d) => existingTrackIds.add(d.landrTrackId));
+
+    const toInsert = [];
+    let skipped = 0;
+    let unmatched = 0;
+
     for (const record of records) {
-      // Extract and clean ID value
       const landrTrackId = record.Id?.trim();
-      if (!landrTrackId) continue;
+      if (!landrTrackId) { skipped++; continue; }
 
-      // Find the matching release
+      // Skip if same track already recorded for this date
+      if (existingTrackIds.has(landrTrackId)) { skipped++; continue; }
+
       const release = releaseMap[landrTrackId];
-      if (!release) continue;
+      if (!release) { unmatched++; continue; }
 
-      // Parse streaming data
-      // LANDR provides lifetime totals, so we store them directly
-      const streamData = {
+      toInsert.push({
         releaseId: release._id,
         landrTrackId,
         date,
@@ -113,20 +117,19 @@ export async function POST(request) {
           changePercentage: parseFloat(record['Downloads change %'] || 0),
         },
         reportFile: reportFileName,
-      };
-
-      streamDataRecords.push(streamData);
+      });
     }
 
-    // Insert all records at once
-    if (streamDataRecords.length > 0) {
-      await StreamData.insertMany(streamDataRecords);
+    if (toInsert.length > 0) {
+      await StreamData.insertMany(toInsert);
     }
 
     return NextResponse.json({
-      message: 'LANDR stream data processed successfully',
-      recordsProcessed: streamDataRecords.length,
-      totalRecords: records.length,
+      message: 'Stream data processed successfully',
+      inserted: toInsert.length,
+      skipped,
+      unmatched,
+      reportDate: date.toISOString().split('T')[0],
     });
   } catch (error) {
     console.error('Error processing stream data:', error);
@@ -135,4 +138,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-} 
+}
