@@ -1,14 +1,44 @@
-# Allow all crawlers
+# Soul Distribution - robots.txt
+# https://souldistribution.in
+
+# ─── Allow all major crawlers ───────────────────────────────────────────────
 User-agent: *
 Allow: /
+Allow: /analytics
+Allow: /analytics/revenue
+Allow: /releases
+Allow: /artists
+Allow: /services
+Allow: /about
+Allow: /contact
+Allow: /terms
+Allow: /privacy
 
-# Sitemap location
-Sitemap: https://souldistribution.in/sitemap.xml
-
-# Disallow admin and API routes
+# Disallow admin, API & internal routes
 Disallow: /admin/
 Disallow: /api/
 Disallow: /_next/
 Disallow: /static/
-Crawl-delay: 10 
+Disallow: /login
+Disallow: /unauthorized
 
+# ─── Googlebot ──────────────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+Allow: /analytics
+Allow: /analytics/revenue
+Disallow: /admin/
+Disallow: /api/
+Crawl-delay: 2
+
+# ─── Bingbot ────────────────────────────────────────────────────────────────
+User-agent: Bingbot
+Allow: /
+Allow: /analytics
+Allow: /analytics/revenue
+Disallow: /admin/
+Disallow: /api/
+Crawl-delay: 5
+
+# ─── Sitemap ─────────────────────────────────────────────────────────────────
+Sitemap: https://souldistribution.in/sitemap.xml

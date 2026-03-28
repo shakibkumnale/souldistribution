@@ -7,7 +7,7 @@ const ReleaseSchema = new mongoose.Schema({
     required: [true, 'Please provide the release title'],
     trim: true,
   },
-  description: {
+  description: { 
     type: String,
     trim: true,
   },

@@ -82,6 +82,18 @@ export default async function sitemap() {
         priority: 0.7,
       },
       {
+        url: `${baseUrl}/analytics`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
+        url: `${baseUrl}/analytics/revenue`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
         url: `${baseUrl}/terms`,
         lastModified: new Date(),
         changeFrequency: 'yearly',

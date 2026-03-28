@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Music, Globe, ArrowRight, PlayCircle, ShoppingCart, PieChart, TrendingUp, Headphones, BarChart, Users } from 'lucide-react';
+import { CheckCircle, Music, Globe, ArrowRight, PlayCircle, ShoppingCart, PieChart, TrendingUp, Headphones, BarChart, Users, DollarSign, Activity } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -31,21 +31,30 @@ export const viewport = {
 
 // Add page-specific metadata export
 export const metadata = {
-  title: 'Soul Distribution - Music Distribution & YouTube Monetization for Independent Artists',
-  description: 'Soul Distribution helps independent artists distribute music to 150+ global platforms including Spotify, Apple Music & YouTube. Keep 100% of your royalties with our affordable plans.',
-  keywords: ['music distribution', 'independent artists', 'spotify distribution', 'youtube monetization', 'keep 100% royalties', 'digital music distribution'],
+  title: 'Soul Distribution - #1 Music Distribution for Independent Artists, Rap & Underground Music',
+  description: 'Soul Distribution helps independent artists, rappers & underground musicians distribute music to 150+ global platforms including Spotify, Apple Music & YouTube. Keep 100% royalties. Best music distributor in India.',
+  keywords: [
+    'music distribution', 'independent artists', 'spotify distribution', 'youtube monetization',
+    'keep 100% royalties', 'digital music distribution', 'rap music distribution', 'hip hop distribution',
+    'underground artist', 'underground music', 'independent rapper', 'music distributor India',
+    'distribute music online', 'best music distributor', 'music streaming platforms', 'royalties',
+    'music release', 'single release', 'album distribution', 'EP release', 'music monetization',
+    'desi rap', 'indian hip hop', 'independent music label', 'music analytics', 'revenue tracking',
+    'music promotion', 'artist services', 'apple music distribution', 'tidal distribution',
+    'amazon music distribution', 'music publishing', 'mechanical royalties', 'streaming royalties'
+  ],
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Soul Distribution - Music Distribution & YouTube Monetization',
-    description: 'Distribute your music to 150+ platforms worldwide. Keep 100% of your royalties with our affordable plans for independent artists.',
+    title: 'Soul Distribution - Music Distribution for Independent Artists & Rappers',
+    description: 'The best music distributor for independent artists, rappers & underground musicians. Distribute to 150+ platforms worldwide and keep 100% of your royalties.',
     images: [
       {
         url: '/api/og/default',
         width: 1200,
         height: 630,
-        alt: 'Soul Distribution - Music Distribution',
+        alt: 'Soul Distribution - Music Distribution for Independent Artists',
       },
     ],
   },
@@ -130,13 +139,14 @@ export default async function HomePage() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Soul Distribution',
-    url: 'https://souldistribution.com',
-    logo: 'https://souldistribution.com/logo.png',
-    description: 'Soul Distribution helps independent artists distribute music worldwide to all major streaming platforms and get verified on YouTube with monetization services.',
+    url: 'https://souldistribution.in',
+    logo: 'https://souldistribution.in/logo.png',
+    description: 'Soul Distribution helps independent artists, rappers, and underground musicians distribute music worldwide to all major streaming platforms including Spotify, Apple Music, Amazon Music, and 150+ DSPs. Keep 100% of your royalties with full analytics and revenue tracking.',
     sameAs: [
-      'https://www.instagram.com/souldistribution', 
+      'https://www.instagram.com/souldistribution',
       'https://www.youtube.com/souldistribution',
-      'https://twitter.com/souldistribution'
+      'https://twitter.com/souldistribution',
+      'https://souldistribution.in'
     ],
     contactPoint: {
       '@type': 'ContactPoint',
@@ -396,11 +406,92 @@ export default async function HomePage() {
         </div>
       </section>
       
+      {/* Analytics CTA Section */}
+      <section className="w-full py-16 sm:py-20 bg-[#141419] relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-950/40 via-[#141419] to-[#141419]"></div>
+        <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+        <div className="relative z-10 px-4 md:px-8 max-w-7xl mx-auto">
+          <div className="bg-gradient-to-r from-gray-900/80 via-emerald-950/30 to-gray-900/80 rounded-xl sm:rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 border border-emerald-800/30 shadow-xl backdrop-blur-sm">
+            <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+              {/* Left: Icon & Title */}
+              <div className="flex-shrink-0 text-center md:text-left">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-600/20 border border-emerald-500/30 mb-4">
+                  <BarChart className="h-10 w-10 text-emerald-400" />
+                </div>
+                <div className="inline-flex md:block">
+                  <span className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
+                    LIVE DASHBOARD
+                  </span>
+                </div>
+              </div>
+
+              {/* Center: Copy */}
+              <div className="flex-1 text-center md:text-left">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-3 sm:mb-4">
+                  <span className="text-white">Track Your </span>
+                  <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Streams &amp; Revenue</span>
+                </h2>
+                <p className="text-sm sm:text-base md:text-lg text-gray-300 mb-2">
+                  Get real-time insights into your music performance across all platforms. Monitor streams, listener demographics, and earnings in one place.
+                </p>
+                <p className="text-sm text-gray-500">
+                  Detailed breakdowns by platform, country, and store — built for independent artists and underground musicians.
+                </p>
+              </div>
+
+              {/* Right: Buttons */}
+              <div className="flex-shrink-0 flex flex-col gap-3 w-full sm:w-auto">
+                <Button
+                  size="lg"
+                  className="text-sm sm:text-base bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 border-0 shadow-lg shadow-emerald-900/40 w-full sm:w-auto"
+                  asChild
+                >
+                  <Link href="/analytics/revenue" id="analytics-revenue-btn">
+                    <DollarSign className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Revenue Dashboard
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="text-sm sm:text-base border-emerald-600/50 text-emerald-300 hover:bg-emerald-900/30 hover:border-emerald-500 w-full sm:w-auto"
+                  asChild
+                >
+                  <Link href="/analytics" id="analytics-streams-btn">
+                    <Activity className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                    Stream Analytics
+                  </Link>
+                </Button>
+              </div>
+            </div>
+
+            {/* Mini stats row */}
+            <div className="mt-8 pt-6 border-t border-emerald-800/20 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {[
+                { label: 'Platforms Tracked', value: '150+', icon: <Globe className="h-4 w-4 text-emerald-400" /> },
+                { label: 'Revenue Reports', value: 'Monthly', icon: <DollarSign className="h-4 w-4 text-teal-400" /> },
+                { label: 'Stream Insights', value: 'Real-Time', icon: <TrendingUp className="h-4 w-4 text-green-400" /> },
+                { label: 'Countries', value: '195+', icon: <BarChart className="h-4 w-4 text-emerald-400" /> },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-center gap-3 bg-black/20 rounded-lg p-3">
+                  <div className="flex-shrink-0 p-1.5 rounded-lg bg-emerald-900/30">{stat.icon}</div>
+                  <div>
+                    <div className="text-lg font-bold text-white">{stat.value}</div>
+                    <div className="text-xs text-gray-400">{stat.label}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
       <section className="py-16 sm:py-20 md:py-24 px-4 md:px-8 max-w-7xl mx-auto">
         <div className="bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-purple-900/40 rounded-xl sm:rounded-2xl md:rounded-3xl p-6 sm:p-8 md:p-12 text-center shadow-glow-primary border border-purple-800/20">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4 sm:mb-6 text-gradient">Ready to Share Your Music with the World?</h2>
           <p className="text-base sm:text-lg md:text-xl text-gray-300 mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto">
-            Join thousands of independent artists who trust Soul Distribution to get their music heard globally.
+            Join thousands of independent artists, rappers, and underground musicians who trust Soul Distribution to get their music heard globally.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="text-sm sm:text-base bg-gradient-to-r from-purple-700 to-pink-600 hover:from-purple-600 hover:to-pink-500 border-0" asChild>
